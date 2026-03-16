@@ -9,11 +9,11 @@ import Foundation
 import simd
 
 public final class CollisionSystem: System {
-    public let priority: Int = 10
+    public let priority: Int = 30
 
     public func update(deltaTime: Double, world: World) {
         let dt = Float(deltaTime)
-        // Need entites with BOTH Transform and CollisionBox components
+        // Need entities with BOTH Transform and CollisionBox components
         let collidables = world.entities(
             with: TransformComponent.self,
             and: CollisionBoxComponent.self
@@ -62,7 +62,7 @@ public final class CollisionSystem: System {
             let projA = project(center: transformA.position, halfExtents: halfA, rotation: transformA.rotation, onto: axis)
             let projB = project(center: transformB.position, halfExtents: halfB, rotation: transformB.rotation, onto: axis)
             let o = min(projA.max, projB.max) - max(projA.min, projB.min)
-            guard o > 0 else { return nil }  // Separating axis found, can be seperated by a line
+            guard o > 0 else { return nil }  // Separating axis found, can be separated by a line
             if o < minOverlap {
                 minOverlap = o
                 mtvAxis = axis

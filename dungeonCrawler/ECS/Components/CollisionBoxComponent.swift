@@ -4,8 +4,9 @@
 //
 //  Created by Yu Letian on 16/3/26.
 //
+import simd
 
-public final class CollisionBoxComponent: Component {
+public struct CollisionBoxComponent: Component {
     public var size: SIMD2<Float>
 
     public var width: Float {
@@ -19,7 +20,4 @@ public final class CollisionBoxComponent: Component {
     public init(size: SIMD2<Float> = .zero) {
         self.size = size
     }
-
-    // Workaround for iOS 26 Swift runtime bug (MarkerItem::create allocator mismatch).
-    deinit {}
 }
