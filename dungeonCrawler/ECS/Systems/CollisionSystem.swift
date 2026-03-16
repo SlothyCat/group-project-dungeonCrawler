@@ -12,4 +12,10 @@ public final class CollisionSystem: System {
         // OBB collision detection and resolution using SAT (Separating Axis Theorem).
         
     }
+    
+    public func minimumTranslationVector(
+        transformA: TransformComponent, boxA: CollisionBoxComponent,
+        transformB: TransformComponent, boxB: CollisionBoxComponent) {
+        
+    }
 }
