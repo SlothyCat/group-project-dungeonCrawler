@@ -2,6 +2,8 @@
 //  EntityFactoryTests.swift
 //  dungeonCrawlerTests
 //
+//  Created by Wen Kang Yap on 16/3/26.
+//
 
 import Foundation
 import XCTest
