@@ -85,7 +85,8 @@ public enum EntityFactory {
         let entity = world.createEntity()
         let startPos = world.getComponent(type: TransformComponent.self, for: player)?.position ?? .zero
         world.addComponent(component: TransformComponent(position: startPos + offset, rotation: 0, scale: scale), to: entity)
-        world.addComponent(component: SpriteComponent(textureName: textureName), to: entity)
+        world.addComponent(component: VelocityComponent(), to: entity)
+        world.addComponent(component: SpriteComponent(textureName: textureName, zLayer: 2), to: entity)
         world.addComponent(component: OwnerComponent(ownerEntity: player, offset: offset), to: entity)
         world.addComponent(component: WeaponComponent(
             type: .handgun,
