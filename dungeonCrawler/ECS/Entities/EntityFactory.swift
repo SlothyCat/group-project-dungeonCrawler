@@ -73,4 +73,42 @@ public enum EntityFactory {
 
         return entity
     }
+    
+    // MARK: - Room Factory
+        
+    // Creates a room entity with all necessary components
+    //
+    // Components attached:
+    //   • RoomComponent       — bounds, doorways, spawn points
+    //   • TransformComponent  — position at room center (for spatial queries)
+    //
+    // Future additions:
+    //   • RoomThemeComponent  — visual style (dungeon, forest, ice cave)
+    //   • RoomLootComponent   — treasure chest spawn points
+    
+    @discardableResult
+    public static func makeRoom(
+        in world: World,
+        bounds: RoomBounds,
+        doorways: [Doorway] = [],
+        spawnPoints: [SpawnPoint] = [],
+        useGrid: Bool = false
+    ) -> Entity {
+        let entity = world.createEntity()
+        var roomComponent = RoomComponent(bounds: bounds, doorways: doorways, spawnPoints: spawnPoints)
+        
+        // Optionally add grid layout for tile-based generation
+        if useGrid {
+            let gridSize = SIMD2<Int>(
+                Int(bounds.size.x / 32), // 32 units per tile
+                Int(bounds.size.y / 32)
+            )
+            roomComponent.gridLayout = GridLayout(gridSize: gridSize, cellSize: 32)
+        }
+        
+        world.addComponent(component: roomComponent, to: entity)
+        world.addComponent(component: TransformComponent(position: bounds.center), to: entity)
+        
+        return entity
+    }
 }
