@@ -38,6 +38,7 @@ public enum EntityFactory {
         world.addComponent(component: VelocityComponent(), to: entity)
         world.addComponent(component: InputComponent(), to: entity)
         world.addComponent(component: SpriteComponent(textureName: textureName), to: entity)
+        world.addComponent(component: CollisionBoxComponent(size: SIMD2<Float>(28, 28)), to: entity)
         world.addComponent(component: PlayerTagComponent(), to: entity)
         world.addComponent(component: CameraFocusComponent(), to: entity)
         world.addComponent(component: HealthComponent(base: 100), to: entity)

@@ -71,14 +71,14 @@ public final class RoomGenerator {
         // Bottom wall
         createWallSegment(
             position: SIMD2<Float>(bounds.center.x, bounds.origin.y + thickness / 2),
-            size: SIMD2<Float>(bounds.size.x, thickness),
+            size: SIMD2<Float>(bounds.size.x - 2 * thickness, thickness),
             world: world
         )
         
         // Top wall
         createWallSegment(
             position: SIMD2<Float>(bounds.center.x, bounds.max.y - thickness / 2),
-            size: SIMD2<Float>(bounds.size.x, thickness),
+            size: SIMD2<Float>(bounds.size.x - 2 * thickness, thickness),
             world: world
         )
         
@@ -105,7 +105,7 @@ public final class RoomGenerator {
         let wall = world.createEntity()
         world.addComponent(component: TransformComponent(position: position), to: wall)
         world.addComponent(component: CollisionBoxComponent(size: size), to: wall)
-        world.addComponent(component: SpriteComponent.darkWall, to: wall)
+        world.addComponent(component: SpriteComponent.wall(size: size), to: wall)
         world.addComponent(component: WallTag(), to: wall)
         print("wall of size \(size) at \(position) created")
     }
@@ -115,7 +115,7 @@ public final class RoomGenerator {
     private func createFloorTiles(bounds: RoomBounds, world: World) {
         let floor = world.createEntity()
         world.addComponent(component: TransformComponent(position: bounds.center), to: floor)
-        world.addComponent(component: SpriteComponent.greenFloor, to: floor)
+        world.addComponent(component: SpriteComponent.floor(size: bounds.size), to: floor)
         world.addComponent(component: FloorTag(), to: floor)
     }
     
