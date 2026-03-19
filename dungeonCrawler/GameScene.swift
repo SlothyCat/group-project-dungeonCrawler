@@ -9,68 +9,78 @@ import SpriteKit
 import GameplayKit
 
 class GameScene: SKScene {
-    
+
     // MARK: - ECS core
     private let world         = World()
     private let systemManager = SystemManager()
 
+    // MARK: - Scene layers
+    /// worldLayer moves each frame to implement camera tracking.
+    private let worldLayer = SKNode()
+    /// uiLayer stays fixed — joystick HUD lives here.
+    private let uiLayer    = SKNode()
+
+    // MARK: - Adapters
+    private var renderingBackend: SpriteKitRenderingAdapter!
+    private var cameraAdapter: SpriteKitCameraAdapter!
+
     // MARK: - Input provider
     private let touchInput = TouchJoystickInputProvider()
-    
+
     // MARK: - Joystick HUD nodes (drawn directly in SpriteKit, above game world)
-    // Two pairs: base ring + handle knob, one per thumb.
-    // Nodes are added/removed each frame based on whether the thumb is active.
-    private let leftBase   = SKShapeNode(circleOfRadius: 50)
-    private let leftHandle = SKShapeNode(circleOfRadius: 22)
-    private let rightBase  = SKShapeNode(circleOfRadius: 50)
+    private let leftBase    = SKShapeNode(circleOfRadius: 50)
+    private let leftHandle  = SKShapeNode(circleOfRadius: 22)
+    private let rightBase   = SKShapeNode(circleOfRadius: 50)
     private let rightHandle = SKShapeNode(circleOfRadius: 22)
-    
-    private var lastUpdateTime : TimeInterval = 0
-  
+
+    private var lastUpdateTime: TimeInterval = 0
+
     override func sceneDidLoad() {
-        
         self.lastUpdateTime = 0
-        
+
         let background = SKSpriteNode(color: .darkGray, size: self.size)
         background.position = .zero
         background.zPosition = -1
         addChild(background)
 
+        addChild(worldLayer)
+        addChild(uiLayer)
+
         view?.isMultipleTouchEnabled = true
-        
+
         setupJoystickHUD()
         setupSystems()
         spawnInitialEntities()
     }
-    
+
     // MARK: - Joystick HUD setup
 
     private func setupJoystickHUD() {
-        // Base ring — semi-transparent white outline
         for base in [leftBase, rightBase] {
             base.strokeColor = SKColor(white: 1, alpha: 0.35)
             base.fillColor   = SKColor(white: 1, alpha: 0.08)
             base.lineWidth   = 2
             base.zPosition   = 50
             base.isHidden    = true
-            addChild(base)
+            uiLayer.addChild(base)
         }
 
-        // Handle knob — slightly more opaque
         for handle in [leftHandle, rightHandle] {
             handle.strokeColor = SKColor(white: 1, alpha: 0.6)
             handle.fillColor   = SKColor(white: 1, alpha: 0.25)
             handle.lineWidth   = 2
             handle.zPosition   = 51
             handle.isHidden    = true
-            addChild(handle)
+            uiLayer.addChild(handle)
         }
     }
 
-    
     // MARK: - System wiring
 
     private func setupSystems() {
+        renderingBackend = SpriteKitRenderingAdapter(worldLayer: worldLayer)
+        cameraAdapter    = SpriteKitCameraAdapter(worldLayer: worldLayer)
+
         systemManager.register(InputSystem(inputProvider: touchInput))
         systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem())
@@ -78,43 +88,50 @@ class GameScene: SKScene {
         systemManager.register(CollisionSystem())
         systemManager.register(KnockbackSystem())
         systemManager.register(RenderSystem(scene: self))
+        systemManager.register(CameraSystem())
+        systemManager.register(RenderSystem(backend: renderingBackend))
     }
 
     // MARK: - Entity spawning
 
     private func spawnInitialEntities() {
         let shortSide   = Float(min(size.width, size.height))
-        let knightScale = shortSide * 0.04 / 48.0   // assumes 48pt base texture size
-        let enemyScale = shortSide * 0.04 / 48.0   // follow knight scale for now
+        let knightScale = shortSide * 0.04 / 48.0
+        let enemyScale  = shortSide * 0.04 / 48.0
+
         EntityFactory.makePlayer(in: world, at: .zero, scale: knightScale)
         EntityFactory.makeEnemy(in: world, at: SIMD2(100, 100), type: .charger, baseScale: enemyScale)
         EntityFactory.makeEnemy(in: world, at: SIMD2(200, 200), type: .tower, baseScale: enemyScale)
+
+        // Camera entity — ViewportComponent holds live camera state.
+        // CameraFocusComponent stays on the player
+        let cameraEntity = world.createEntity()
+        world.addComponent(component: ViewportComponent(), to: cameraEntity)
     }
 
     // MARK: - Touch forwarding
-    
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let view = view else { return }
+        guard let view else { return }
         touchInput.touchesBegan(touches, in: view)
     }
-    
+
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let view = view else { return }
+        guard let view else { return }
         touchInput.touchesMoved(touches, in: view)
     }
-    
+
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let view = view else { return }
+        guard let view else { return }
         touchInput.touchesEnded(touches, in: view)
     }
-    
+
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let view = view else { return }
+        guard let view else { return }
         touchInput.touchesCancelled(touches, in: view)
     }
-    
+
     // MARK: - Joystick HUD update
-    // Called every frame. Positions nodes based on current touch state.
 
     private func updateJoystickHUD() {
         updateStick(
@@ -145,15 +162,15 @@ class GameScene: SKScene {
             handle.isHidden = true
         }
     }
-    
+
     /// Converts a UIKit point (origin top-left) to SpriteKit space (origin centre).
     private func uiKitToSpriteKit(_ point: CGPoint) -> CGPoint {
         CGPoint(
             x: point.x - size.width  / 2,
-            y: size.height / 2 - point.y   // flip Y
+            y: size.height / 2 - point.y
         )
     }
-    
+
     // MARK: - Game loop
 
     override func update(_ currentTime: TimeInterval) {
@@ -162,6 +179,13 @@ class GameScene: SKScene {
         lastUpdateTime = currentTime
 
         systemManager.update(deltaTime: deltaTime, world: world)
+
+        // Apply camera viewport to worldLayer after ECS update.
+        if let cameraEntity = world.entities(with: ViewportComponent.self).first,
+           let viewport = world.getComponent(type: ViewportComponent.self, for: cameraEntity) {
+            cameraAdapter.apply(viewport: viewport, screenCenter: .zero)
+        }
+
         updateJoystickHUD()
     }
 }

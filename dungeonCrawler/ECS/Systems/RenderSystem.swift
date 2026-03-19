@@ -6,92 +6,41 @@
 //
 
 import Foundation
-import SpriteKit
-import simd
 
 public final class RenderSystem: System {
 
     public let priority: Int = 100
 
-    // MARK: - Internal state
+    private weak var backend: RenderingBackend?
+    private var seenEntities: Set<Entity> = []
 
-    private weak var scene: SKScene?
-
-    /// Maps each entity to its managed SKSpriteNode.
-    private var _nodeRegistry: [Entity: SKSpriteNode] = [:]
-
-    public init(scene: SKScene) {
-        self.scene = scene
+    public init(backend: RenderingBackend) {
+        self.backend = backend
     }
 
     // MARK: - Update
 
     public func update(deltaTime: Double, world: World) {
-        guard let scene = scene else { return }
+        guard let backend else { return }
 
         let renderables = world.entities(
             with: TransformComponent.self,
             and: SpriteComponent.self
         )
 
-        var seenEntities = Set<Entity>()
+        var currentEntities = Set<Entity>()
 
         for (entity, transform, sprite) in renderables {
-            seenEntities.insert(entity)
-
-            let node = nodeFor(entity: entity, sprite: sprite, in: scene)
-
-            // Sync position and rotation from ECS → SpriteKit.
-      
-            node.position = transform.cgPoint
-            node.zRotation = 0
-            
-            var flipFactor: CGFloat = node.xScale < 0 ? -1.0 : 1.0
-            if let velocity = world.getComponent(type: VelocityComponent.self, for: entity) {
-                if velocity.linear.x > 0 {
-                    flipFactor = 1.0  // Moving right
-                } else if velocity.linear.x < 0 {
-                    flipFactor = -1.0 // Moving left
-                }
-            }
-            
-            node.xScale    = CGFloat(transform.scale) * flipFactor
-            node.yScale    = CGFloat(transform.scale)
-
-            // Sync tint.
-            node.color = SKColor(
-                red:   CGFloat(sprite.tintRed),
-                green: CGFloat(sprite.tintGreen),
-                blue:  CGFloat(sprite.tintBlue),
-                alpha: CGFloat(sprite.tintAlpha)
-            )
-            node.colorBlendFactor = (sprite.tintRed == 1 && sprite.tintGreen == 1 &&
-                                     sprite.tintBlue == 1) ? 0.0 : 1.0
+            currentEntities.insert(entity)
+            let velocity = world.getComponent(type: VelocityComponent.self, for: entity)
+            backend.syncNode(for: entity, transform: transform, sprite: sprite, velocity: velocity)
         }
 
-        // Remove nodes for entities that no longer have both components
-        // (destroyed entities, or SpriteComponent removed mid-game).
-        let staleEntities = Set(_nodeRegistry.keys).subtracting(seenEntities)
+        // Remove nodes for entities that no longer have both components.
+        let staleEntities = seenEntities.subtracting(currentEntities)
         for entity in staleEntities {
-            _nodeRegistry[entity]?.removeFromParent()
-            _nodeRegistry[entity] = nil
+            backend.removeNode(for: entity)
         }
-    }
-
-    // MARK: - Node lifecycle
-
-    private func nodeFor(entity: Entity, sprite: SpriteComponent, in scene: SKScene) -> SKSpriteNode {
-        if let existing = _nodeRegistry[entity] { return existing }
-
-        let texture = SKTexture(imageNamed: sprite.textureName)
-        let node = SKSpriteNode(texture: texture)
-        node.name = "entity_\(entity.id)"
-
-        // Future: add a `zLayer` field to SpriteComponent.
-        node.zPosition = 1
-
-        scene.addChild(node)
-        _nodeRegistry[entity] = node
-        return node
+        seenEntities = currentEntities
     }
 }
