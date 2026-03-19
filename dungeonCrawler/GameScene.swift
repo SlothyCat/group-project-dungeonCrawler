@@ -87,7 +87,6 @@ class GameScene: SKScene {
         systemManager.register(MovementSystem())
         systemManager.register(CollisionSystem())
         systemManager.register(KnockbackSystem())
-        systemManager.register(RenderSystem(scene: self))
         systemManager.register(CameraSystem())
         systemManager.register(RenderSystem(backend: renderingBackend))
     }
