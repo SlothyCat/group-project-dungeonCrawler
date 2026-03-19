@@ -47,10 +47,8 @@ Key computed properties:
 Room bounds are built in `GameScene` and passed to `MapSystem`. The bounds are calculated from the screen size so the room fills the visible area:
 
 ```swift
-let wallThickness = Float(16)
-let inset = CGFloat(wallThickness)
-let roomWidth  = Float(size.width  - inset * 2)
-let roomHeight = Float(size.height - inset * 2)
+let roomWidth  = Float(size.width)  * 0.9
+let roomHeight = Float(size.height) * 0.9
 let bounds = RoomBounds(
     origin: SIMD2<Float>(-roomWidth / 2, -roomHeight / 2),
     size:   SIMD2<Float>(roomWidth, roomHeight)

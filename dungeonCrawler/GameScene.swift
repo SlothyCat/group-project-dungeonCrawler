@@ -109,6 +109,12 @@ class GameScene: SKScene {
         mapSystem.spawnPlayerInRoom(room: room, world: world, size: size)
         
         // Create camera entity and attach focus to the player.
+        let cameraEntity = world.createEntity()
+        world.addComponent(component: ViewportComponent(), to: cameraEntity)
+       
+        if let player = world.entities(with: PlayerTagComponent.self).first {
+            world.addComponent(component: CameraFocusComponent(), to: player)
+        }
     }
 
     private func spawnInitialEntities() {

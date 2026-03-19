@@ -32,7 +32,7 @@ mapSystem.spawnPlayerInRoom(room: room, world: world, size: view.bounds.size)
 
 1. **Create the room entity** via `EntityFactory.makeRoom` — attaches `RoomComponent` and `TransformComponent`.
 2. **Generate the interior** via `RoomGenerator.generateRoomInterior` — creates perimeter wall entities and a floor entity.
-3. **Add spawn points** — one `playerEntry` point (at room centre, or offset from the first doorway if one exists) and five random `enemy` spawn points within the room bounds.
+3. **Add spawn points** — one `playerEntry` point (at room centre, or offset from the first doorway if one exists) and three random `enemy` spawn points within the room bounds.
 4. **Spawn enemies** at the enemy spawn points that fall within the room bounds.
 5. **Tag the room** with `RoomLockedTag` and `RoomInCombatTag`.
 

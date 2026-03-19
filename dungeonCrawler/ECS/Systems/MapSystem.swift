@@ -112,7 +112,7 @@ public final class MapSystem: System {
                 in: world,
                 at: spawnPoint.position,
                 type: enemyType,
-                baseScale: scale * enemyType.scale
+                baseScale: scale
             )
         }
     }
