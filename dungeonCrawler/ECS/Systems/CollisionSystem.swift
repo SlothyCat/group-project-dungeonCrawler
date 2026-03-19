@@ -92,56 +92,73 @@ public final class CollisionSystem: System {
         return (c - r, c + r)
     }
 
-    // Currently, the player will bounce in the opposite direction more than enemy
     private func resolveCollision(entityA: Entity, entityB: Entity, mtv: SIMD2<Float>,
                                    transformA: TransformComponent, transformB: TransformComponent,
                                    world: World) {
-        let bounceDir = normalize(transformA.position - transformB.position)
-        let knockbackSpeed: Float = 150
-        let knockbackDuration: Float = 0.1
-        let playerBounce: Float = 0.1
-        let enemyBounce: Float = 0.75
 
-
+        let aIsStatic = world.getComponent(type: VelocityComponent.self, for: entityA) == nil
+        let bIsStatic = world.getComponent(type: VelocityComponent.self, for: entityB) == nil
         let aIsPlayer = world.getComponent(type: PlayerTagComponent.self, for: entityA) != nil
         let bIsPlayer = world.getComponent(type: PlayerTagComponent.self, for: entityB) != nil
-        let aInKnockback = world.getComponent(type: KnockbackComponent.self, for: entityA) != nil
-        let bInKnockback = world.getComponent(type: KnockbackComponent.self, for: entityB) != nil
-
-        if aIsPlayer {
-            world.modifyComponent(type: TransformComponent.self, for: entityA) {
-                $0.position += mtv * playerBounce
-            }
-
-            world.modifyComponent(type: TransformComponent.self, for: entityB) {
-                $0.position -= mtv * enemyBounce
-            }
-
-            if !aInKnockback {
-                world.addComponent(component: KnockbackComponent(velocity: knockbackSpeed * bounceDir, remainingTime: knockbackDuration), to: entityA)
-            }
-            if !bInKnockback {
-                world.addComponent(component: KnockbackComponent(velocity: knockbackSpeed * -bounceDir, remainingTime: knockbackDuration), to: entityB)
-            }
-        } else if bIsPlayer {
-            world.modifyComponent(type: TransformComponent.self, for: entityB) { $0.position -= mtv * playerBounce }
-            world.modifyComponent(type: TransformComponent.self, for: entityA) { $0.position += mtv * enemyBounce }
-            if !bInKnockback {
-                world.addComponent(component: KnockbackComponent(velocity: knockbackSpeed * -bounceDir, remainingTime: knockbackDuration), to: entityB)
-            }
-            if !aInKnockback {
-                world.addComponent(component: KnockbackComponent(velocity: knockbackSpeed * bounceDir, remainingTime: knockbackDuration), to: entityA)
-            }
+        
+        if aIsStatic && bIsStatic {
+            return // Two static entities — nothing moves.
+        } else if aIsStatic || bIsStatic {
+            resolveStaticCollision(dynamic: aIsStatic ? entityB : entityA,
+                                   mtv: aIsStatic ? -mtv : mtv,
+                                   world: world)
+        } else if aIsPlayer || bIsPlayer {
+            let (player, enemy, pushTowardPlayer) = aIsPlayer
+                ? (entityA, entityB,  mtv)
+                : (entityB, entityA, -mtv)
+            resolvePlayerEnemyCollision(player: player, enemy: enemy,
+                                        pushTowardPlayer: pushTowardPlayer, world: world)
         } else {
-            // enemy vs enemy — equal push
-            world.modifyComponent(type: TransformComponent.self, for: entityA) { $0.position += mtv * 0.5 }
-            world.modifyComponent(type: TransformComponent.self, for: entityB) { $0.position -= mtv * 0.5 }
-            if !aInKnockback {
-                world.addComponent(component: KnockbackComponent(velocity: knockbackSpeed * bounceDir, remainingTime: knockbackDuration), to: entityA)
-            }
-            if !bInKnockback {
-                world.addComponent(component: KnockbackComponent(velocity: knockbackSpeed * -bounceDir, remainingTime: knockbackDuration), to: entityB)
-            }
+            resolveEnemyEnemyCollision(entityA: entityA, entityB: entityB, mtv: mtv, world: world)
         }
+    }
+    
+    /// Dynamic entity (player or enemy) hits a static entity (wall, obstacle).
+    /// Only the dynamic entity is displaced; the static one never moves.
+    private func resolveStaticCollision(dynamic: Entity, mtv: SIMD2<Float>, world: World) {
+        world.modifyComponent(type: TransformComponent.self, for: dynamic) {
+            $0.position += mtv
+        }
+    }
+    
+    /// Player and enemy overlap — small nudge for the player, larger for the enemy,
+    /// and knockback applied to both if not already in knockback.
+    private func resolvePlayerEnemyCollision(player: Entity, enemy: Entity, pushTowardPlayer: SIMD2<Float>, world: World) {
+        let playerBounce: Float = 0.1
+        let enemyBounce: Float = 0.75
+        let knockbackSpeed: Float = 150
+        let knockbackDuration: Float = 0.1
+        let bounceDir = normalize(pushTowardPlayer)
+ 
+        world.modifyComponent(type: TransformComponent.self, for: player) {
+            $0.position += pushTowardPlayer * playerBounce
+        }
+        world.modifyComponent(type: TransformComponent.self, for: enemy) {
+            $0.position -= pushTowardPlayer * enemyBounce
+        }
+        applyKnockbackIfNeeded(to: player, velocity:  knockbackSpeed * bounceDir,
+                               duration: knockbackDuration, world: world)
+        applyKnockbackIfNeeded(to: enemy,  velocity: -knockbackSpeed * bounceDir,
+                               duration: knockbackDuration, world: world)
+    }
+ 
+    /// Two enemies overlap — equal positional split, no knockback.
+    private func resolveEnemyEnemyCollision(entityA: Entity, entityB: Entity, mtv: SIMD2<Float>, world: World) {
+        world.modifyComponent(type: TransformComponent.self, for: entityA) { $0.position += mtv * 0.5 }
+        world.modifyComponent(type: TransformComponent.self, for: entityB) { $0.position -= mtv * 0.5 }
+    }
+ 
+    /// Adds a KnockbackComponent only if the entity is not already being knocked back.
+    private func applyKnockbackIfNeeded(to entity: Entity, velocity: SIMD2<Float>, duration: Float, world: World) {
+        guard world.getComponent(type: KnockbackComponent.self, for: entity) == nil else { return }
+        world.addComponent(
+            component: KnockbackComponent(velocity: velocity, remainingTime: duration),
+            to: entity
+        )
     }
 }
