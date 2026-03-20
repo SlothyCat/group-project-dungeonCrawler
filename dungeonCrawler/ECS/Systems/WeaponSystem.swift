@@ -60,9 +60,9 @@ class WeaponSystem: System {
                                  owner: Entity,
                                  in world: World) {
         let projectile = world.createEntity()
-        world.addComponent(component: TransformComponent(position: position, scale: 0.2), to: projectile)
+        world.addComponent(component: TransformComponent(position: position, scale: 1), to: projectile)
         world.addComponent(component: VelocityComponent(linear: direction * speed), to: projectile)
-        world.addComponent(component: SpriteComponent(textureName: "bullet", zLayer: 3), to: projectile)
+        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zLayer: 3), to: projectile)
         world.addComponent(component: ProjectileComponent(
             damage: 10, owner: owner, effectiveRange: 400
         ), to: projectile)
