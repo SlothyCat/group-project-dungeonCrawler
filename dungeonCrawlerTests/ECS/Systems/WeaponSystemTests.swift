@@ -41,6 +41,7 @@ final class WeaponSystemTests: XCTestCase {
             aimDirection: aimDirection,
             isShooting: isShooting
         ), to: owner)
+        world.addComponent(component: FacingComponent(facing: ownerVelocity.x < 0 ? .left : .right), to: owner)
 
         let weapon = world.createEntity()
         world.addComponent(component: TransformComponent(position: ownerPosition + offset), to: weapon)
