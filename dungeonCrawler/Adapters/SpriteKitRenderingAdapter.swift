@@ -31,12 +31,9 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         node.zRotation = 0
 
         var flipFactor: CGFloat = node.xScale < 0 ? -1.0 : 1.0
-        if let velocity {
-            if velocity.linear.x > 0 {
-                flipFactor = 1.0
-            } else if velocity.linear.x < 0 {
-                flipFactor = -1.0
-            }
+
+        if let velocity, velocity.linear.x != 0 {
+            flipFactor = velocity.linear.x > 0 ? 1.0 : -1.0
         }
 
         node.xScale = CGFloat(transform.scale) * flipFactor
@@ -65,7 +62,7 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         let texture = SKTexture(imageNamed: sprite.textureName)
         let node = SKSpriteNode(texture: texture)
         node.name = "entity_\(entity.id)"
-        node.zPosition = 1
+        node.zPosition = CGFloat(sprite.zLayer)
         parent.addChild(node)
         nodeRegistry[entity] = node
         return node

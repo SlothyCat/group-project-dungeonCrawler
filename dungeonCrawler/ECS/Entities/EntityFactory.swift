@@ -83,4 +83,29 @@ public enum EntityFactory {
 
         return entity
     }
+
+    @discardableResult
+    public static func makeWeapon(
+        in world: World,
+        ownedBy player: Entity,
+        textureName: String = "handgun",
+        offset: SIMD2<Float> = .zero,
+        scale: Float = 1,
+        time: Float
+    ) -> Entity {
+        let entity = world.createEntity()
+        let startPos = world.getComponent(type: TransformComponent.self, for: player)?.position ?? .zero
+        world.addComponent(component: TransformComponent(position: startPos + offset, rotation: 0, scale: scale), to: entity)
+        world.addComponent(component: VelocityComponent(), to: entity)
+        world.addComponent(component: SpriteComponent(textureName: textureName, zLayer: 2), to: entity)
+        world.addComponent(component: OwnerComponent(ownerEntity: player, offset: offset), to: entity)
+        world.addComponent(component: WeaponComponent(
+            type: .handgun,
+            manaCost: 10,
+            attackSpeed: 1,
+            coolDownInterval: TimeInterval(0.2),
+            lastFiredAt: time
+        ), to: entity)
+        return entity
+    }
 }
