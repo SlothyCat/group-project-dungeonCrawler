@@ -26,6 +26,13 @@ class GameScene: SKScene {
 
     // MARK: - Input provider
     private let touchInput = TouchJoystickInputProvider()
+    
+    // MARK: - Map system
+    private let mapSystem = MapSystem()
+    
+    // MARK: - Collision Events
+    let collisionEvents   = CollisionEventBuffer()
+    let destructionQueue  = DestructionQueue()
 
     // MARK: - Joystick HUD nodes (drawn directly in SpriteKit, above game world)
     private let leftBase    = SKShapeNode(circleOfRadius: 50)
@@ -50,7 +57,7 @@ class GameScene: SKScene {
 
         setupJoystickHUD()
         setupSystems()
-        spawnInitialEntities()
+        generateInitialRoom()
     }
 
     // MARK: - Joystick HUD setup
@@ -80,20 +87,41 @@ class GameScene: SKScene {
     private func setupSystems() {
         renderingBackend = SpriteKitRenderingAdapter(worldLayer: worldLayer)
         cameraAdapter    = SpriteKitCameraAdapter(worldLayer: worldLayer)
-
+        
+        systemManager.register(mapSystem)
         systemManager.register(InputSystem(inputProvider: touchInput))
         systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem())
         systemManager.register(MovementSystem())
-        systemManager.register(CollisionSystem())
+        systemManager.register(CollisionSystem(events: collisionEvents,  destructionQueue: destructionQueue))
         systemManager.register(WeaponSystem())
         systemManager.register(KnockbackSystem())
         systemManager.register(CameraSystem())
         systemManager.register(RenderSystem(backend: renderingBackend))
-        systemManager.register(ProjectileSystem())
+        systemManager.register(ProjectileSystem(events: collisionEvents,  destructionQueue: destructionQueue))
     }
 
     // MARK: - Entity spawning
+
+    private func generateInitialRoom() {
+        let roomWidth  = Float(size.width  * 0.9)
+        let roomHeight = Float(size.height * 0.9)
+        let bounds = RoomBounds(
+            origin: SIMD2<Float>(-roomWidth / 2, -roomHeight / 2),
+            size:   SIMD2<Float>(roomWidth, roomHeight)
+        )
+        
+        let room = mapSystem.generateAndActivateRoom(bounds: bounds, world: world, size: size)
+        mapSystem.spawnPlayerInRoom(room: room, world: world, size: size)
+        
+        // Create camera entity and attach focus to the player.
+        let cameraEntity = world.createEntity()
+        world.addComponent(component: ViewportComponent(), to: cameraEntity)
+       
+        if let player = world.entities(with: PlayerTagComponent.self).first {
+            world.addComponent(component: CameraFocusComponent(), to: player)
+        }
+    }
 
     private func spawnInitialEntities() {
         let shortSide   = Float(min(size.width, size.height))
@@ -106,8 +134,12 @@ class GameScene: SKScene {
         EntityFactory.makeWeapon(in: world, ownedBy: playerEntity, textureName: "handgun", offset: SIMD2(10, -5), scale: weaponScale, lastFiredAt: 0)
         // Camera entity — ViewportComponent holds live camera state.
         // CameraFocusComponent stays on the player
+
         let cameraEntity = world.createEntity()
         world.addComponent(component: ViewportComponent(), to: cameraEntity)
+        if let player = world.entities(with: PlayerTagComponent.self).first {
+            world.addComponent(component: CameraFocusComponent(), to: player)
+        }
     }
 
     // MARK: - Touch forwarding

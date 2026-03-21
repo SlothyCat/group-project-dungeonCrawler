@@ -21,7 +21,7 @@ Components are attached to entities and stored centrally in `ComponentStorage`. 
 
 Under the hood, components are stored in two layers:
 
-- **`ComponentStore<T>`** — a per-type dictionary `[Entity: T]` that holds all components of a single type.
+- **`ComponentStore<T>`** — a per-type dictionary `[EntityID: T]` that holds all components of a single type.
 - **`ComponentStorage`** — a type-erased registry that maps `ObjectIdentifier(T.self)` to its `ComponentStore<T>`.
 
 These are generally never interacted with directly. Use the `World` API instead.

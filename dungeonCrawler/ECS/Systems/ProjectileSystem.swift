@@ -10,6 +10,15 @@ import simd
 
 public final class ProjectileSystem: System {
     public let priority: Int = 60 // After weapon spawn new projectiles
+    
+    private let events: CollisionEventBuffer
+    private let destructionQueue: DestructionQueue
+ 
+    public init(events: CollisionEventBuffer, destructionQueue: DestructionQueue) {
+        self.events = events
+        self.destructionQueue = destructionQueue
+    }
+    
     public func update(deltaTime: Double, world: World) {
         let dt = Float(deltaTime)
         for (projectileEntity, _, velocityComponent, _, _) in world.entities(
@@ -27,8 +36,16 @@ public final class ProjectileSystem: System {
                 remainingRange = rangeComponent.value.current
             }
             if remainingRange <= 0 {
-                world.destroyEntity(entity: projectileEntity)
+                destructionQueue.enqueue(projectileEntity)
             }
         }
+        
+        let hitProjectiles = Set(events.projectileHitSolid.map { $0.projectile.id })
+        for id in hitProjectiles {
+            let entity = Entity(id: id)
+            guard world.isAlive(entity: entity) else { continue }
+            destructionQueue.enqueue(entity)
+        }
+        destructionQueue.flush(world: world)
     }
 }

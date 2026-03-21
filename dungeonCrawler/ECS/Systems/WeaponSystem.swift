@@ -63,26 +63,9 @@ public final class WeaponSystem: System {
                     }
                     // Only for projectile weapon now
                     // TODO: replace speed
-                    spawnProjectile(from: ownerTransform.position, aimAt: fireDirection, speed: 300, owner: ownerEntity, in: world)
+                    EntityFactory.makeProjectile(from: ownerTransform.position, aimAt: fireDirection, speed: 300, owner: ownerEntity, in: world)
                 }
             }
         }
-    }
-    
-    private func spawnProjectile(from position: SIMD2<Float>,
-                                 aimAt direction: SIMD2<Float>,
-                                 speed: Float,
-                                 owner: Entity,
-                                 in world: World) {
-        let projectile = world.createEntity()
-        let goingRight = direction.x >= 0
-        let bulletRotation: Float = goingRight
-            ? atan2(direction.y, direction.x)
-            : -atan2(direction.y, -direction.x)
-        world.addComponent(component: TransformComponent(position: position, rotation: bulletRotation, scale: 1), to: projectile)
-        world.addComponent(component: VelocityComponent(linear: direction * speed), to: projectile)
-        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zLayer: 5), to: projectile)
-        world.addComponent(component: ProjectileComponent(damage: 10, owner: owner), to: projectile)
-        world.addComponent(component: EffectiveRangeComponent(base: 400), to: projectile)
     }
 }

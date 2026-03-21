@@ -15,11 +15,13 @@ final class ProjectileSystemTests: XCTestCase {
     
     var world: World!
     var system: ProjectileSystem!
+    let collisionEvents   = CollisionEventBuffer()
+    let destructionQueue  = DestructionQueue()
     
     override func setUp() {
         super.setUp()
         world = World()
-        system = ProjectileSystem()
+        system = ProjectileSystem(events: collisionEvents,  destructionQueue: destructionQueue)
     }
     
     override func tearDown() {
@@ -41,7 +43,7 @@ final class ProjectileSystemTests: XCTestCase {
         let projectile = world.createEntity()
         world.addComponent(component: TransformComponent(position: position, scale: 1), to: projectile)
         world.addComponent(component: VelocityComponent(linear: direction * speed), to: projectile)
-        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zLayer: 5), to: projectile)
+        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zPosition: 5), to: projectile)
         world.addComponent(component: ProjectileComponent(damage: 10, owner: owner), to: projectile)
         world.addComponent(component: EffectiveRangeComponent(base: ProjectileSystemTests.defaultEffectiveRange), to: projectile)
         return projectile
@@ -56,7 +58,7 @@ final class ProjectileSystemTests: XCTestCase {
     
     func testProjectileDestroyedAfterEffectiveRangeBecomeZero() {
         let projectile = makeProjectile()
-        system.update(deltaTime: 1, world: world)
+        system.update(deltaTime: 5, world: world)
         let projectileAfter = world.getComponent(type: ProjectileComponent.self, for: projectile) ?? nil
         XCTAssertNil(projectileAfter)
     }
