@@ -136,6 +136,8 @@ public final class MapSystem: System {
             } else {
                 EntityFactory.makePlayer(in: world, at: entryPoint.position, scale: scale)
             }
+            let player = findPlayer(in: world)
+            EntityFactory.makeWeapon(in: world, ownedBy: player!, textureName: "handgun", offset: SIMD2(10, -5), scale: scale, lastFiredAt: 0)
         }
     }
     

@@ -41,7 +41,7 @@ final class ProjectileSystemTests: XCTestCase {
         let projectile = world.createEntity()
         world.addComponent(component: TransformComponent(position: position, scale: 1), to: projectile)
         world.addComponent(component: VelocityComponent(linear: direction * speed), to: projectile)
-        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zLayer: 5), to: projectile)
+        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zPosition: 5), to: projectile)
         world.addComponent(component: ProjectileComponent(damage: 10, owner: owner), to: projectile)
         world.addComponent(component: EffectiveRangeComponent(base: ProjectileSystemTests.defaultEffectiveRange), to: projectile)
         return projectile

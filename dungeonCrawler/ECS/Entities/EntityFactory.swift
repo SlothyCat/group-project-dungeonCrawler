@@ -136,7 +136,7 @@ public enum EntityFactory {
         world.addComponent(component: TransformComponent(position: startPos + offset, rotation: 0, scale: scale), to: entity)
         let facingOfOwner = world.getComponent(type: FacingComponent.self, for: player)?.facing ?? .right
         world.addComponent(component: FacingComponent(facing: facingOfOwner), to: entity)
-        world.addComponent(component: SpriteComponent(textureName: textureName, zLayer: 4), to: entity)
+        world.addComponent(component: SpriteComponent(textureName: textureName, zPosition: 4), to: entity)
         world.addComponent(component: OwnerComponent(ownerEntity: player, offset: offset), to: entity)
         world.addComponent(component: WeaponComponent(
             type: .handgun,
