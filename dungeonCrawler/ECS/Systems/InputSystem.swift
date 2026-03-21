@@ -46,6 +46,13 @@ public final class InputSystem: System {
                 input.aimDirection  = aimDirection
                 input.isShooting    = shooting
             }
+
+            // Update facing: shoot direction takes priority over move direction.
+            let facingX: Float = shooting ? aimDirection.x : moveDirection.x
+            guard facingX != 0 else { continue }
+            world.modifyComponent(type: FacingComponent.self, for: entity) { facing in
+                facing.facing = facingX > 0 ? .right : .left
+            }
         }
     }
 }

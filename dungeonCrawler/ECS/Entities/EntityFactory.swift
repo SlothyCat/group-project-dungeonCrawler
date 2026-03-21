@@ -44,6 +44,7 @@ public enum EntityFactory {
         world.addComponent(component: HealthComponent(base: 100), to: entity)
         world.addComponent(component: MoveSpeedComponent(base: 90), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2(48 * scale, 48 * scale)), to: entity)
+        world.addComponent(component: FacingComponent(), to: entity)
 
         return entity
     }

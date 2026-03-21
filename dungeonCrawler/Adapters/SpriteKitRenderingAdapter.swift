@@ -22,6 +22,7 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         for entity: Entity,
         transform: TransformComponent,
         sprite: SpriteComponent,
+        facing: FacingComponent?,
         velocity: VelocityComponent?
     ) {
         guard let worldLayer else { return }
@@ -31,8 +32,9 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         node.zRotation = 0
 
         var flipFactor: CGFloat = node.xScale < 0 ? -1.0 : 1.0
-
-        if let velocity, velocity.linear.x != 0 {
+        if let facing {
+            flipFactor = facing.facing == .right ? 1.0 : -1.0
+        } else if let velocity, velocity.linear.x != 0 {
             flipFactor = velocity.linear.x > 0 ? 1.0 : -1.0
         }
 
