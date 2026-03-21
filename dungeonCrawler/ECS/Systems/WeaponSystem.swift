@@ -18,13 +18,9 @@ public final class WeaponSystem: System {
             guard let ownerTransform = world.getComponent(type: TransformComponent.self, for: ownerEntity),
                   let ownerInput = world.getComponent(type: InputComponent.self, for: ownerEntity) else { continue }
 
-            let ownerVelocity = world.getComponent(type: VelocityComponent.self, for: ownerEntity)
+            let ownerFacing = world.getComponent(type: FacingComponent.self, for: ownerEntity)
+            let facingRight = ownerFacing?.facing != .left
 
-            // offset from player to center of weapon's x corr flip if needed
-            var facingRight: Bool = true
-            if let vx = ownerVelocity?.linear.x, vx != 0 {
-                facingRight = vx > 0
-            }
             let mirroredOffset = SIMD2<Float>(
                 facingRight ? ownerComponent.offset.x : -ownerComponent.offset.x,
                 ownerComponent.offset.y
@@ -36,7 +32,7 @@ public final class WeaponSystem: System {
 
             // Copy owner velocity so syncNode's flipFactor logic flips the weapon sprite
             world.modifyComponent(type: VelocityComponent.self, for: weaponEntity) { vel in
-                vel.linear.x = ownerVelocity?.linear.x ?? vel.linear.x
+                vel.linear.x = facingRight ? 1.0 : -1.0
             }
             
             if ownerInput.isShooting {

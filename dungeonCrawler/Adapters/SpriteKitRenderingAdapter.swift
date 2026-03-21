@@ -31,6 +31,7 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         node.position = transform.cgPoint
         node.zRotation = 0
 
+        // We need to keep velocity here as some entity don't have facing component (eg. enemy, projectile)
         var flipFactor: CGFloat = node.xScale < 0 ? -1.0 : 1.0
         if let facing {
             flipFactor = facing.facing == .right ? 1.0 : -1.0
