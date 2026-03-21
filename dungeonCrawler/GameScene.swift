@@ -103,7 +103,7 @@ class GameScene: SKScene {
         let playerEntity = EntityFactory.makePlayer(in: world, at: .zero, scale: knightScale)
         EntityFactory.makeEnemy(in: world, at: SIMD2(200, 200), type: .tower, baseScale: enemyScale)
         EntityFactory.makeEnemy(in: world, at: SIMD2(100, 100), type: .charger, baseScale: enemyScale * EnemyType.charger.scale)
-        EntityFactory.makeWeapon(in: world, ownedBy: playerEntity, textureName: "handgun", offset: SIMD2(10, -5), scale: weaponScale, time: 0)
+        EntityFactory.makeWeapon(in: world, ownedBy: playerEntity, textureName: "handgun", offset: SIMD2(10, -5), scale: weaponScale, lastFiredAt: 0)
         // Camera entity — ViewportComponent holds live camera state.
         // CameraFocusComponent stays on the player
         let cameraEntity = world.createEntity()

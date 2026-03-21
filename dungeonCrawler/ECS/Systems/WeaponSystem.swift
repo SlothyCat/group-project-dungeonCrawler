@@ -6,17 +6,18 @@ public final class WeaponSystem: System {
     
     private var gameTime: Float
 
-    init() {
+    public init() {
         self.gameTime = 0
     }
 
     public func update(deltaTime: Foundation.TimeInterval, world: World) {
         self.gameTime += Float(deltaTime)
 
-        for (weaponEntity, weaponComponent, ownerComponent, _) in world.entities(
+        for (weaponEntity, weaponComponent, ownerComponent, _, _) in world.entities(
             with: WeaponComponent.self,
             and: OwnerComponent.self,
-            and: FacingComponent.self) {
+            and: FacingComponent.self,
+            and: TransformComponent.self) {
             let ownerEntity = ownerComponent.ownerEntity
             guard let ownerTransform = world.getComponent(type: TransformComponent.self, for: ownerEntity),
                   let ownerInput = world.getComponent(type: InputComponent.self, for: ownerEntity) else { continue }

@@ -50,6 +50,7 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         )
         node.colorBlendFactor = (sprite.tintRed == 1 && sprite.tintGreen == 1 &&
                                  sprite.tintBlue == 1) ? 0.0 : 1.0
+        node.zPosition = CGFloat(sprite.zLayer)
     }
 
     public func removeNode(for entity: Entity) {

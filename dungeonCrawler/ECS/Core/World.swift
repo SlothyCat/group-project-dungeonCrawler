@@ -96,7 +96,7 @@ public final class World {
         }
     }
 
-    /// Returns every living entity that has all three of `T`, `U`, and `V` (3-way join).
+    /// Returns every living entity that has all three of `T`, `U`, `V` and `W` (4-way join).
     public func entities<T: Component, U: Component, V: Component, W: Component>(
         with typeA: T.Type,
         and typeB: U.Type,
