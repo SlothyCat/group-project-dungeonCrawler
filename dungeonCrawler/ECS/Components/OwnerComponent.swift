@@ -1,9 +1,9 @@
 import Foundation
 
 struct OwnerComponent: Component {
-    public var ownerEntity: Entity
+    var ownerEntity: Entity
 
-    public var offset: SIMD2<Float>
+    var offset: SIMD2<Float>
 
     init(ownerEntity: Entity, offset: SIMD2<Float> = .zero) {
         self.ownerEntity = ownerEntity

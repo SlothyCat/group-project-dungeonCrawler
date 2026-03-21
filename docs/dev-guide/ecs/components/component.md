@@ -79,7 +79,10 @@ for (entity, transform, sprite) in renderables {
 
 ## Weapons
 
-Weapons are entities that can be equipped by the player. They have the following components:
+- `WeaponComponent` — defines damage, fire rate, ammo, and other weapon statistics.
+- `OwnerComponent` — links the weapon to the entity (for example, the player) that currently owns or has equipped it.
+- `TransformComponent` — determines where the weapon is in the world (position and rotation) so it can spawn projectiles correctly.
+- `SpriteComponent` — provides rendering data so the weapon can be drawn by the rendering system.
 
 ## Projectiles
 

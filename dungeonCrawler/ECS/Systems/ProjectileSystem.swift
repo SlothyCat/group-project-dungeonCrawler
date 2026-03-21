@@ -12,7 +12,7 @@ public final class ProjectileSystem: System {
     public let priority: Int = 60 // After weapon spawn new projectiles
     public func update(deltaTime: Double, world: World) {
         let dt = Float(deltaTime)
-        for (projectileEntity, projectileComponent, velocityComponent) in world.entities(with: ProjectileComponent.self, and: VelocityComponent.self) {
+        for (projectileEntity, _, velocityComponent, _) in world.entities(with: ProjectileComponent.self, and: VelocityComponent.self, and: TransformComponent.self) {
             world.modifyComponent(type: TransformComponent.self, for: projectileEntity) { transform in
                 transform.position += velocityComponent.linear * dt
             }

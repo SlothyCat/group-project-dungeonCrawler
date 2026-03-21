@@ -1,8 +1,8 @@
 import Foundation
 import simd
 
-class WeaponSystem: System {
-    var priority: Int = 50
+public final class WeaponSystem: System {
+    public let priority: Int = 50
     
     private var gameTime: Float
 
@@ -10,7 +10,7 @@ class WeaponSystem: System {
         self.gameTime = 0
     }
 
-    func update(deltaTime: Foundation.TimeInterval, world: World) {
+    public func update(deltaTime: Foundation.TimeInterval, world: World) {
         self.gameTime += Float(deltaTime)
 
         for (weaponEntity, weaponComponent, ownerComponent) in world.entities(with: WeaponComponent.self, and: OwnerComponent.self) {
@@ -43,7 +43,7 @@ class WeaponSystem: System {
                 let isReadyToFire: Bool = (gameTime - weaponComponent.lastFiredAt) >= Float(weaponComponent.coolDownInterval)
                 let aimDirection = ownerInput.aimDirection
                 if isReadyToFire {
-                    world.modifyComponent(type: WeaponComponent.self, for: weaponEntity, ) { weapon in
+                    world.modifyComponent(type: WeaponComponent.self, for: weaponEntity) { weapon in
                         weapon.lastFiredAt = gameTime
                     }
                     // Only for projectile weapon now

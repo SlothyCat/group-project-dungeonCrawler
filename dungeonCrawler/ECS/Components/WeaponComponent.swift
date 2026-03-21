@@ -2,7 +2,7 @@ import Foundation
 
 struct WeaponComponent: Component {
     var type: WeaponType
-    // TODO: update to a range when StatComponet is ready, now just 0 to effectiveRange
+    // TODO: update to a range when StatComponent is ready, now just 0 to effectiveRange
     var manaCost: Float
     var attackSpeed: Float
     var coolDownInterval: TimeInterval
