@@ -30,7 +30,7 @@ The component is added by `CollisionSystem` and removed automatically by `Knockb
 
 ## KnockbackSystem
 
-`KnockbackSystem` runs at `priority: 12` (before `EnemyAISystem` at 15, before `MovementSystem` at 20). Each frame it:
+`KnockbackSystem` runs at `priority: 12`. Lower priority numbers run first, so it runs before `EnemyAISystem` (15) and `MovementSystem` (20). Each frame it:
 
 1. Applies `velocity × deltaTime` directly to `TransformComponent.position` for every entity with a `KnockbackComponent`.
 2. Decrements `remainingTime` by `deltaTime`.
@@ -81,12 +81,14 @@ This prevents rapid successive contacts from resetting or stacking the impulse.
 
 ## System Execution Order
 
+Systems execute in ascending priority order (lower number = runs first).
+
 | Priority | System | Role |
 |---|---|---|
-| `30` | `CollisionSystem` | Detects overlaps, adds `KnockbackComponent` |
-| `20` | `MovementSystem` | Skips entities with `KnockbackComponent` |
-| `15` | `EnemyAISystem` | Skips enemies with `KnockbackComponent` |
 | `12` | `KnockbackSystem` | Applies and expires the impulse |
+| `15` | `EnemyAISystem` | Skips enemies with `KnockbackComponent` |
+| `20` | `MovementSystem` | Skips entities with `KnockbackComponent` |
+| `30` | `CollisionSystem` | Detects overlaps, adds `KnockbackComponent` |
 
 ---
 
