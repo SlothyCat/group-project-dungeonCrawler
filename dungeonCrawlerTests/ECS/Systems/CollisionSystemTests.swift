@@ -39,7 +39,7 @@ final class CollisionSystemTests: XCTestCase {
         world.addComponent(component: TransformComponent(position: position, scale: 1), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: size), to: entity)
         world.addComponent(component: VelocityComponent(), to: entity)
-        world.addComponent(component: EnemyTagComponent(enemyType: .charger), to: entity)
+        world.addComponent(component: EnemyTagComponent(textureName: EnemyType.charger.textureName, scale: EnemyType.charger.scale), to: entity)
         return entity
     }
  

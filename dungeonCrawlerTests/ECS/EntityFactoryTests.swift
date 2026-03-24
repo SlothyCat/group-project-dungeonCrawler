@@ -181,11 +181,18 @@ final class EntityFactoryTests: XCTestCase {
         XCTAssertNotNil(world.getComponent(type: EnemyTagComponent.self, for: enemy))
     }
 
-    func testMakeEnemyTagMatchesType() {
+    func testMakeEnemyTagStoresCorrectTextureName() {
         let enemy = EnemyEntityFactory(at: .zero, type: .mummy).make(in: world)
         let tag = world.getComponent(type: EnemyTagComponent.self, for: enemy)
         XCTAssertNotNil(tag)
-        XCTAssertTrue(tag!.enemyType == .mummy)
+        XCTAssertEqual(tag!.textureName, EnemyType.mummy.textureName)
+    }
+
+    func testMakeEnemyTagStoresCorrectScale() {
+        let enemy = EnemyEntityFactory(at: .zero, type: .tower).make(in: world)
+        let tag = world.getComponent(type: EnemyTagComponent.self, for: enemy)
+        XCTAssertNotNil(tag)
+        XCTAssertEqual(tag!.scale, EnemyType.tower.scale, accuracy: 0.001)
     }
 
     // MARK: - makeEnemy: VelocityComponent and EnemyStateComponent

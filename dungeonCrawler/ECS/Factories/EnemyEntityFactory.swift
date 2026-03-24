@@ -8,6 +8,32 @@
 import Foundation
 import simd
 
+// new enemy types should go in here
+public enum EnemyType {
+    case charger
+    case mummy
+    case ranger
+    case tower
+
+    var textureName: String {
+        switch self {
+        case .charger: return "Charger"
+        case .mummy:   return "Mummy"
+        case .ranger:  return "Ranger"
+        case .tower:   return "Tower"
+        }
+    }
+
+    var scale: Float {
+        switch self {
+        case .charger: return 1.0
+        case .mummy:   return 1.0
+        case .ranger:  return 0.75
+        case .tower:   return 1.5
+        }
+    }
+}
+
 // Components attached:
 //   • TransformComponent   — position, rotation, scale
 //   • SpriteComponent      — visual representation
@@ -42,7 +68,7 @@ public struct EnemyEntityFactory: EntityFactory {
 
         world.addComponent(component: TransformComponent(position: position, rotation: 0, scale: finalScale), to: entity)
         world.addComponent(component: SpriteComponent(textureName: type.textureName), to: entity)
-        world.addComponent(component: EnemyTagComponent(enemyType: type), to: entity)
+        world.addComponent(component: EnemyTagComponent(textureName: type.textureName, scale: type.scale), to: entity)
         world.addComponent(component: VelocityComponent(), to: entity)
         world.addComponent(component: EnemyStateComponent(), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2(48 * finalScale, 48 * finalScale)), to: entity)
