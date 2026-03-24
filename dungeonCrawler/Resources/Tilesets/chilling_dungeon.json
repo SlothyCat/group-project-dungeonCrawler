@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "sheet": "chilling_dungeon",
+    "tileSize": 16,
+    "sheetCols": 32,
+    "sheetRows": 32
+  },
+
+  "floor": {
+    "plain":    { "col": 2, "row": 5 },
+    "variant1": { "col": 3, "row": 5 },
+    "variant2": { "col": 4, "row": 5 },
+    "variant3": { "col": 5, "row": 5 },
+    "variant4": { "col": 6, "row": 5 }
+  },
+
+  "wall": {
+    "top": {
+      "capRow":  [
+        { "col": 1, "row": 0 },
+        { "col": 2, "row": 0 },
+        { "col": 3, "row": 0 },
+        { "col": 4, "row": 0 }
+      ],
+      "faceRow": [
+        { "col": 1, "row": 2 },
+        { "col": 2, "row": 2 },
+        { "col": 3, "row": 2 },
+        { "col": 4, "row": 2 }
+      ],
+      "baseRow": [
+        { "col": 1, "row": 3 },
+        { "col": 2, "row": 3 },
+        { "col": 3, "row": 3 },
+        { "col": 4, "row": 3 }
+      ]
+    },
+    "bottom": [
+      { "col": 1, "row": 11 },
+      { "col": 2, "row": 11 },
+      { "col": 3, "row": 11 },
+      { "col": 4, "row": 11 }
+    ],
+    "left": [
+      { "col": 0, "row": 1 },
+      { "col": 0, "row": 2 },
+      { "col": 0, "row": 3 },
+      { "col": 0, "row": 4 }
+    ],
+    "right": [
+      { "col": 11, "row": 0 },
+      { "col": 11, "row": 1 },
+      { "col": 11, "row": 2 },
+      { "col": 11, "row": 3 }
+    ],
+    "corners": {
+      "topLeft":     { "col": 0, "row": 0 },
+      "topRight":    { "col": 11, "row": 0 },
+      "bottomLeft":  { "col": 0, "row": 11 },
+      "bottomRight": { "col": 11, "row": 11 }
+    }
+  }
+}
