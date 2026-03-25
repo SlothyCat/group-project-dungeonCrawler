@@ -42,21 +42,29 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         node.xScale = CGFloat(transform.scale) * flipFactor
         node.yScale = CGFloat(transform.scale)
         
-        let isColourSprite: Bool
+        let baseColor: SIMD4<Float>
+        let isColourContent: Bool
         switch sprite.content {
-        case .solidColor: isColourSprite = true
-        case .texture:    isColourSprite = false
+        case .solidColor(let color):
+            baseColor = color
+            isColourContent = true
+        case .texture:
+            baseColor = SIMD4<Float>(1, 1, 1, 1)
+            isColourContent = false
         }
         
+        let finalColor = baseColor * sprite.tint
+        
         node.color = SKColor(
-            red:   CGFloat(sprite.tint.x),
-            green: CGFloat(sprite.tint.y),
-            blue:  CGFloat(sprite.tint.z),
-            alpha: CGFloat(sprite.tint.w)
+            red:   CGFloat(finalColor.x),
+            green: CGFloat(finalColor.y),
+            blue:  CGFloat(finalColor.z),
+            alpha: CGFloat(finalColor.w)
         )
-        // Only apply a colorBlendFactor if the tint isn't pure white
-        let isWhite = sprite.tint.x == 1 && sprite.tint.y == 1 && sprite.tint.z == 1
-        node.colorBlendFactor = isColourSprite ? 1.0 : (isWhite ? 0.0 : 1.0)
+        
+        // Color blend should be absolute for solids, or conditional for textures based on tint
+        let isWhiteTint = sprite.tint.x == 1 && sprite.tint.y == 1 && sprite.tint.z == 1
+        node.colorBlendFactor = isColourContent ? 1.0 : (isWhiteTint ? 0.0 : 1.0)
     }
 
     public func removeNode(for entity: Entity) {

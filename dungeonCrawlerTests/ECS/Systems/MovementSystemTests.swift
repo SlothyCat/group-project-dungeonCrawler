@@ -47,18 +47,18 @@ struct MovementSystemTests {
 
     // MARK: - Basic Player Movement
 
-    @Test func basicMovement() {
+    @Test func basicMovement() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = makePlayer(in: world, direction: SIMD2(1, 0), speed: 100)
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 0) - 10) < 0.01)
-        #expect(abs((transform?.position.y ?? 0) - 0)  < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 10) < 0.01)
+        #expect(abs(transform.position.y - 0)  < 0.01)
     }
 
-    @Test func movementInAllDirections() {
+    @Test func movementInAllDirections() throws {
         let directions: [SIMD2<Float>] = [
             SIMD2(1, 0), SIMD2(-1, 0), SIMD2(0, 1), SIMD2(0, -1), SIMD2(1, 1)
         ]
@@ -68,61 +68,61 @@ struct MovementSystemTests {
 
             system.update(deltaTime: 0.1, world: world)
 
-            let transform = world.getComponent(type: TransformComponent.self, for: entity)
+            let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
             let expected = direction * 100 * 0.1
-            #expect(abs((transform?.position.x ?? 0) - expected.x) < 0.01)
-            #expect(abs((transform?.position.y ?? 0) - expected.y) < 0.01)
+            #expect(abs(transform.position.x - expected.x) < 0.01)
+            #expect(abs(transform.position.y - expected.y) < 0.01)
         }
     }
 
-    @Test func noMovementWhenDirectionIsZero() {
+    @Test func noMovementWhenDirectionIsZero() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = makePlayer(in: world, at: SIMD2(10, 20), direction: .zero)
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 0) - 10) < 0.01)
-        #expect(abs((transform?.position.y ?? 0) - 20) < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 10) < 0.01)
+        #expect(abs(transform.position.y - 20) < 0.01)
     }
 
-    @Test func velocityIsSetFromInput() {
+    @Test func velocityIsSetFromInput() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = makePlayer(in: world, direction: SIMD2(1, 0), speed: 100)
 
         system.update(deltaTime: 0.1, world: world)
 
-        let velocity = world.getComponent(type: VelocityComponent.self, for: entity)
-        #expect(abs((velocity?.linear.x ?? 0) - 100) < 0.01)
-        #expect(abs((velocity?.linear.y ?? 0) - 0)   < 0.01)
+        let velocity = try #require(world.getComponent(type: VelocityComponent.self, for: entity))
+        #expect(abs(velocity.linear.x - 100) < 0.01)
+        #expect(abs(velocity.linear.y - 0)   < 0.01)
     }
 
-    @Test func differentMoveSpeed() {
+    @Test func differentMoveSpeed() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = makePlayer(in: world, direction: SIMD2(1, 0), speed: 200)
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 0) - 20) < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 20) < 0.01)
     }
 
     // MARK: - Time Step Variations
 
-    @Test func differentDeltaTimes() {
+    @Test func differentDeltaTimes() throws {
         for dt: Double in [0.016, 0.033, 0.1, 1.0] {
             let world = makeWorld(); let system = makeSystem()
             let entity = makePlayer(in: world, direction: SIMD2(1, 0), speed: 100)
 
             system.update(deltaTime: dt, world: world)
 
-            let transform = world.getComponent(type: TransformComponent.self, for: entity)
+            let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
             let expected = Float(dt) * 100
-            #expect(abs((transform?.position.x ?? 0) - expected) < 0.01)
+            #expect(abs(transform.position.x - expected) < 0.01)
         }
     }
 
-    @Test func accumulatedMovementOverMultipleFrames() {
+    @Test func accumulatedMovementOverMultipleFrames() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = makePlayer(in: world, direction: SIMD2(1, 0), speed: 100)
 
@@ -130,9 +130,9 @@ struct MovementSystemTests {
             system.update(deltaTime: 0.016, world: world)
         }
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
         let expected = Float(0.016 * 10) * 100
-        #expect(abs((transform?.position.x ?? 0) - expected) < 0.1)
+        #expect(abs(transform.position.x - expected) < 0.1)
     }
 
     // MARK: - Missing Components
@@ -148,7 +148,7 @@ struct MovementSystemTests {
         system.update(deltaTime: 0.1, world: world)
     }
 
-    @Test func entityWithoutVelocityNotMoved() {
+    @Test func entityWithoutVelocityNotMoved() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = world.createEntity()
         world.addComponent(component: TransformComponent(position: SIMD2(0, 0)), to: entity)
@@ -157,11 +157,11 @@ struct MovementSystemTests {
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 0) - 0) < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 0) < 0.01)
     }
 
-    @Test func entityWithoutInputNotMoved() {
+    @Test func entityWithoutInputNotMoved() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = world.createEntity()
         world.addComponent(component: TransformComponent(position: SIMD2(0, 0)), to: entity)
@@ -169,11 +169,11 @@ struct MovementSystemTests {
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 0) - 0) < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 0) < 0.01)
     }
 
-    @Test func entityWithoutMoveSpeedSkipped() {
+    @Test func entityWithoutMoveSpeedSkipped() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = world.createEntity()
         world.addComponent(component: TransformComponent(position: SIMD2(5, 5)), to: entity)
@@ -182,26 +182,26 @@ struct MovementSystemTests {
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 0) - 5) < 0.01)
-        #expect(abs((transform?.position.y ?? 0) - 5) < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 5) < 0.01)
+        #expect(abs(transform.position.y - 5) < 0.01)
     }
 
     // MARK: - Multiple Entities
 
-    @Test func multipleEntitiesMovingIndependently() {
+    @Test func multipleEntitiesMovingIndependently() throws {
         let world = makeWorld(); let system = makeSystem()
         let e1 = makePlayer(in: world, direction: SIMD2(1, 0), speed: 100)
         let e2 = makePlayer(in: world, direction: SIMD2(0, 1), speed: 100)
 
         system.update(deltaTime: 0.1, world: world)
 
-        let t1 = world.getComponent(type: TransformComponent.self, for: e1)
-        let t2 = world.getComponent(type: TransformComponent.self, for: e2)
-        #expect(abs((t1?.position.x ?? 0) - 10) < 0.01)
-        #expect(abs((t1?.position.y ?? 0) - 0)  < 0.01)
-        #expect(abs((t2?.position.x ?? 0) - 0)  < 0.01)
-        #expect(abs((t2?.position.y ?? 0) - 10) < 0.01)
+        let t1 = try #require(world.getComponent(type: TransformComponent.self, for: e1))
+        let t2 = try #require(world.getComponent(type: TransformComponent.self, for: e2))
+        #expect(abs(t1.position.x - 10) < 0.01)
+        #expect(abs(t1.position.y - 0)  < 0.01)
+        #expect(abs(t2.position.x - 0)  < 0.01)
+        #expect(abs(t2.position.y - 10) < 0.01)
     }
 
     @Test func noEntitiesDoesNotCrash() {
@@ -211,7 +211,7 @@ struct MovementSystemTests {
 
     // MARK: - Knockback Suppression
 
-    @Test func playerInKnockbackNotMovedByInput() {
+    @Test func playerInKnockbackNotMovedByInput() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = makePlayer(in: world, direction: SIMD2(1, 0), speed: 100)
         world.addComponent(
@@ -221,12 +221,12 @@ struct MovementSystemTests {
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 1) - 0) < 0.01)
-        #expect(abs((transform?.position.y ?? 1) - 0) < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 0) < 0.01)
+        #expect(abs(transform.position.y - 0) < 0.01)
     }
 
-    @Test func enemyInKnockbackNotMovedByMovementSystem() {
+    @Test func enemyInKnockbackNotMovedByMovementSystem() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = makeEnemy(in: world, velocity: SIMD2(100, 0))
         world.addComponent(
@@ -236,21 +236,21 @@ struct MovementSystemTests {
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 1) - 0) < 0.01)
-        #expect(abs((transform?.position.y ?? 1) - 0) < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 0) < 0.01)
+        #expect(abs(transform.position.y - 0) < 0.01)
     }
 
     // MARK: - Enemy Movement
 
-    @Test func enemyWithVelocityIsMovedBySystem() {
+    @Test func enemyWithVelocityIsMovedBySystem() throws {
         let world = makeWorld(); let system = makeSystem()
         let entity = makeEnemy(in: world, velocity: SIMD2(100, 0))
 
         system.update(deltaTime: 0.1, world: world)
 
-        let transform = world.getComponent(type: TransformComponent.self, for: entity)
-        #expect(abs((transform?.position.x ?? 0) - 10) < 0.01)
-        #expect(abs((transform?.position.y ?? 0) - 0)  < 0.01)
+        let transform = try #require(world.getComponent(type: TransformComponent.self, for: entity))
+        #expect(abs(transform.position.x - 10) < 0.01)
+        #expect(abs(transform.position.y - 0)  < 0.01)
     }
 }

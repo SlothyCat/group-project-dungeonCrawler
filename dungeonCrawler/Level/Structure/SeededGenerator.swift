@@ -14,7 +14,6 @@ public struct SeededGenerator: RandomNumberGenerator {
     }
 
     /// Generates the next 64-bit random value.
-    /// Uses the 64-bit LCO algorithm constants from Numerical Recipes.
     public mutating func next() -> UInt64 {
         state = 2862933555777941757 &* state &+ 3037000493
         return state

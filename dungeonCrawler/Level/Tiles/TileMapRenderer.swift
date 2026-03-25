@@ -35,12 +35,4 @@ public protocol TileMapRenderer: AnyObject {
     func tearDownAll()
 }
 
-// MARK: - Supporting Types
 
-/// The primary traversal axis of a corridor.
-public enum CorridorAxis {
-    /// Corridor runs left-right (east–west connection).
-    case horizontal
-    /// Corridor runs up-down (north–south connection).
-    case vertical
-}

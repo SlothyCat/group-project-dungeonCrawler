@@ -40,6 +40,8 @@ public struct Graph<NodeID: Hashable, NodeData, EdgeData> {
     /// Appends a directed edge from `from` to `to` carrying `data`.
     /// Both endpoints must already exist (added via `setNode`).
     public mutating func addEdge(from: NodeID, to: NodeID, data: EdgeData) {
+        precondition(nodeStore[from] != nil && nodeStore[to] != nil,
+                     "Both endpoints must already exist in the graph. Add them via setNode before adding an edge.")
         adjacency[from, default: []].append(Edge(from: from, to: to, data: data))
     }
 

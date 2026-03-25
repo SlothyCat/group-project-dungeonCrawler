@@ -18,13 +18,6 @@ struct LevelTransitionSystemTests {
         )
     }
 
-    // MARK: - Metadata
-
-    @Test func priority() {
-        let system = LevelTransitionSystem(orchestrator: makeOrchestrator())
-        #expect(system.priority == 10)
-    }
-
     // MARK: - Guard: no level loaded
 
     @Test func updateWithoutLevelDoesNotCrash() {

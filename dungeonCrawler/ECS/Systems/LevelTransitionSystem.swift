@@ -8,7 +8,7 @@ import simd
 /// event via the `LevelOrchestrator`.
 public final class LevelTransitionSystem: System {
 
-    public let priority: Int = 10 // Runs after movement but before rendering
+    public let priority: Int = 10
 
     private let orchestrator: LevelOrchestrator
 
@@ -24,7 +24,7 @@ public final class LevelTransitionSystem: System {
         
         // 2. Manage Cooldown
         if state.transitionCooldown > 0 {
-            let newCooldown = state.transitionCooldown - Float(deltaTime)
+            let newCooldown = max(0, state.transitionCooldown - Float(deltaTime))
             world.modifyComponent(type: LevelStateComponent.self, for: levelStateEntity) { s in
                 s.transitionCooldown = newCooldown
             }

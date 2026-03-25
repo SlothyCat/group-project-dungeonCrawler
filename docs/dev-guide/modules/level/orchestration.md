@@ -34,7 +34,7 @@ A fixed cooldown (defined in `WorldConstants.transitionCooldown`) prevents "flic
 ---
 
 ## Room Cleanup
-The orchestrator leverages the ECS `World` for cleanup. Every entity associated with a level state (walls, floor, enemies) is tagged with a `RoomMemberComponent(roomID:)` or `OwnerRoomComponent(roomID:)`. When a room is torn down, the orchestrator queries all entities with these components and destroys those matching the targeted ID.
+The orchestrator leverages the ECS `World` for cleanup. Every entity associated with the level state (walls, floors, etc.) is tagged with a `RoomMemberComponent(roomID:)`. When a level is reset or torn down, the orchestrator queries all entities with this component and destroys them globally during `tearDownAll()`.
 
 > [!TIP]
 > This approach ensures that the ECS remains the single source of truth—if an enemy is killed mid-combat, its entity is automatically removed from the world, and the orchestrator doesn't need to maintain a separate list of objects to clean up.

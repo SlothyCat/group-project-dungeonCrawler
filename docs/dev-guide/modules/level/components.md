@@ -20,10 +20,10 @@ Attached to each room entity to describe its specific geometry and spawn logic.
 - **`doorways`**: A collection of `Doorway` connections.
 - **`spawnPoints`**: A list of `SpawnPoint` data for player and enemy spawning.
 
-## `RoomMemberComponent` & `OwnerRoomComponent`
-Tags used to associate entities (walls, floor, enemies, etc.) with a specific room.
-- **Purpose**: Allows the `LevelOrchestrator` to perform targeted cleanup and lifecycle management.
-- **Difference**: `RoomMemberComponent` is typically used for structural geometry, while `OwnerRoomComponent` can be used for gameplay actors like enemies.
+## `RoomMemberComponent`
+Tag used to associate entities (walls, floors, enemies, etc.) with a specific room.
+- **Purpose**: Allows the `LevelOrchestrator` to perform global cleanup and lifecycle management.
+- **Data**: Stores the `roomID` (UUID) matching the room's metadata.
 
 ---
 
