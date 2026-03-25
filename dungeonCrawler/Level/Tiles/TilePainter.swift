@@ -77,7 +77,8 @@ public enum TilePainter {
         rows: Int,
         bounds: RoomBounds,
         doorways: [Doorway],
-        tileSize: Float
+        tileSize: Float,
+        using generator: inout SeededGenerator
     ) -> [TileLayer: [[TileRole?]]] {
         var layers: [TileLayer: [[TileRole?]]] = [
             .floor: Array(repeating: Array(repeating: nil, count: cols), count: rows),
@@ -184,7 +185,7 @@ public enum TilePainter {
                 }
                 
                 // Add some optional floor decorations sporadically in the free space
-                if layers[.structural]![row][col] == nil && Float.random(in: 0...1) > 0.95 {
+                if layers[.structural]![row][col] == nil && Float.random(in: 0...1, using: &generator) > 0.95 {
                     layers[.decoration]![row][col] = .floorDecoration
                 }
             }
@@ -205,7 +206,7 @@ public enum TilePainter {
     ///   - cols: Number of tile columns.
     ///   - rows: Number of tile rows.
     ///   - axis: `.horizontal` (top/bottom walls) or `.vertical` (left/right walls).
-    public static func paintCorridor(cols: Int, rows: Int, axis: CorridorAxis) -> [TileLayer: [[TileRole?]]] {
+    public static func paintCorridor(cols: Int, rows: Int, axis: CorridorAxis, using generator: inout SeededGenerator) -> [TileLayer: [[TileRole?]]] {
         var layers: [TileLayer: [[TileRole?]]] = [
             .floor: Array(repeating: Array(repeating: nil, count: cols), count: rows),
             .structural: Array(repeating: Array(repeating: nil, count: cols), count: rows),

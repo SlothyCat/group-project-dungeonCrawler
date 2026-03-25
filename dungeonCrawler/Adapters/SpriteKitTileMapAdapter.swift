@@ -56,7 +56,8 @@ public final class SpriteKitTileMapAdapter: TileMapRenderer {
         let grids = TilePainter.paint(
             cols: cols, rows: rows,
             bounds: bounds, doorways: doorways,
-            tileSize: tileSize
+            tileSize: tileSize,
+            using: &generator
         )
         
         performRender(roomID: roomID, bounds: bounds, grids: grids, theme: theme, using: &generator)
@@ -74,7 +75,7 @@ public final class SpriteKitTileMapAdapter: TileMapRenderer {
         let cols = max(1, Int(ceil(bounds.size.x / tileSize)))
         let rows = max(1, Int(ceil(bounds.size.y / tileSize)))
 
-        let grids = TilePainter.paintCorridor(cols: cols, rows: rows, axis: axis)
+        let grids = TilePainter.paintCorridor(cols: cols, rows: rows, axis: axis, using: &generator)
         
         performRender(roomID: roomID, bounds: bounds, grids: grids, theme: theme, using: &generator)
     }

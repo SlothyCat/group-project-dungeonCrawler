@@ -54,10 +54,10 @@
       { "col": 0, "row": 4 }
     ],
     "right": [
-      { "col": 11, "row": 0 },
       { "col": 11, "row": 1 },
       { "col": 11, "row": 2 },
-      { "col": 11, "row": 3 }
+      { "col": 11, "row": 3 },
+      { "col": 11, "row": 4 }
     ],
     "corners": {
       "topLeft":     { "col": 0, "row": 0 },

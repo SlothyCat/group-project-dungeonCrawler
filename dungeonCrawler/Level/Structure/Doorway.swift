@@ -36,8 +36,8 @@ public struct DoorwayPosition {
     public static var center: DoorwayPosition { DoorwayPosition(relativeOffset: 0.5) }
     
     /// Returns a randomized position within the safe middle of the wall.
-    public static func jittered() -> DoorwayPosition {
-        DoorwayPosition(relativeOffset: Float.random(in: 0.25...0.75))
+    public static func jittered(using generator: inout SeededGenerator) -> DoorwayPosition {
+        DoorwayPosition(relativeOffset: Float.random(in: 0.25...0.75, using: &generator))
     }
     
     public init(relativeOffset: Float) {
