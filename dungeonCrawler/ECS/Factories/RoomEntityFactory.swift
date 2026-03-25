@@ -19,17 +19,20 @@ import simd
 //   • RoomLootComponent   — treasure chest spawn points
 
 public struct RoomEntityFactory: EntityFactory {
+    let roomID: UUID?
     let bounds: RoomBounds
     let doorways: [Doorway]
     let spawnPoints: [SpawnPoint]
     let useGrid: Bool
 
     public init(
+        roomID: UUID? = nil,
         bounds: RoomBounds,
         doorways: [Doorway] = [],
         spawnPoints: [SpawnPoint] = [],
         useGrid: Bool = false
     ) {
+        self.roomID = roomID
         self.bounds = bounds
         self.doorways = doorways
         self.spawnPoints = spawnPoints
@@ -39,19 +42,17 @@ public struct RoomEntityFactory: EntityFactory {
     @discardableResult
     public func make(in world: World) -> Entity {
         let entity = world.createEntity()
-        var roomComponent = RoomComponent(bounds: bounds, doorways: doorways, spawnPoints: spawnPoints)
+        let rid = roomID ?? UUID()
 
-        // Optionally add grid layout for tile-based generation
-        if useGrid {
-            let gridSize = SIMD2<Int>(
-                Int(bounds.size.x / 32), // 32 units per tile
-                Int(bounds.size.y / 32)
-            )
-            roomComponent.gridLayout = GridLayout(gridSize: gridSize, cellSize: 32)
-        }
-
-        world.addComponent(component: roomComponent, to: entity)
+        let metadata = RoomMetadataComponent(
+            roomID: rid,
+            bounds: bounds,
+            doorways: doorways,
+            spawnPoints: spawnPoints
+        )
+        world.addComponent(component: metadata, to: entity)
         world.addComponent(component: TransformComponent(position: bounds.center), to: entity)
+        world.addComponent(component: RoomMemberComponent(roomID: rid), to: entity)
         return entity
     }
 }

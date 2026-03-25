@@ -42,15 +42,29 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         node.xScale = CGFloat(transform.scale) * flipFactor
         node.yScale = CGFloat(transform.scale)
         
-        let isColourSprite = sprite.textureName.isEmpty
+        let baseColor: SIMD4<Float>
+        let isColourContent: Bool
+        switch sprite.content {
+        case .solidColor(let color):
+            baseColor = color
+            isColourContent = true
+        case .texture:
+            baseColor = SIMD4<Float>(1, 1, 1, 1)
+            isColourContent = false
+        }
+        
+        let finalColor = baseColor * sprite.tint
+        
         node.color = SKColor(
-            red:   CGFloat(sprite.tintRed),
-            green: CGFloat(sprite.tintGreen),
-            blue:  CGFloat(sprite.tintBlue),
-            alpha: CGFloat(sprite.tintAlpha)
+            red:   CGFloat(finalColor.x),
+            green: CGFloat(finalColor.y),
+            blue:  CGFloat(finalColor.z),
+            alpha: CGFloat(finalColor.w)
         )
-        node.colorBlendFactor = isColourSprite ? 1.0
-            : (sprite.tintRed == 1 && sprite.tintGreen == 1 && sprite.tintBlue == 1) ? 0.0 : 1.0
+        
+        // Color blend should be absolute for solids, or conditional for textures based on tint
+        let isWhiteTint = sprite.tint.x == 1 && sprite.tint.y == 1 && sprite.tint.z == 1
+        node.colorBlendFactor = isColourContent ? 1.0 : (isWhiteTint ? 0.0 : 1.0)
     }
 
     public func removeNode(for entity: Entity) {
@@ -64,18 +78,24 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         if let existing = nodeRegistry[entity] { return existing }
         let node: SKSpriteNode
 
-        if sprite.textureName.isEmpty {
-            // Colour-only sprite: create a white 1×1 pixel and tint it.
+        switch sprite.content {
+        case .solidColor(let colorVal):
             let size = sprite.renderSize.map { CGSize(width: CGFloat($0.x), height: CGFloat($0.y)) }
                        ?? CGSize(width: 1, height: 1)
-            node = SKSpriteNode(color: .white, size: size)
-        } else {
-            let texture = SKTexture(imageNamed: sprite.textureName)
+            node = SKSpriteNode(color: SKColor(
+                red: CGFloat(colorVal.x),
+                green: CGFloat(colorVal.y),
+                blue: CGFloat(colorVal.z),
+                alpha: CGFloat(colorVal.w)
+            ), size: size)
+        case .texture(let name):
+            let texture = SKTexture(imageNamed: name)
             node = SKSpriteNode(texture: texture)
         }
         
         node.name = "entity_\(entity.id)"
-        node.zPosition = sprite.zPosition
+        node.zPosition = sprite.layer.rawValue
+        node.anchorPoint = CGPoint(x: CGFloat(sprite.anchorPoint.x), y: CGFloat(sprite.anchorPoint.y))
         parent.addChild(node)
         nodeRegistry[entity] = node
         return node

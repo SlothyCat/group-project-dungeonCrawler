@@ -77,11 +77,19 @@ public struct EnemyEntityFactory: EntityFactory {
         let finalScale = baseScale * type.scale
 
         world.addComponent(component: TransformComponent(position: position, rotation: 0, scale: finalScale), to: entity)
-        world.addComponent(component: SpriteComponent(textureName: type.textureName), to: entity)
-        world.addComponent(component: EnemyTagComponent(textureName: type.textureName, scale: type.scale), to: entity)
+        world.addComponent(component: SpriteComponent(
+            content: .texture(name: type.textureName),
+            layer: .entity
+        ), to: entity)
+
+        world.addComponent(component: EnemyTagComponent(
+            textureName: type.textureName,
+            scale: finalScale
+        ), to: entity)
+        
         world.addComponent(component: VelocityComponent(), to: entity)
         world.addComponent(component: EnemyStateComponent(), to: entity)
-        world.addComponent(component: CollisionBoxComponent(size: SIMD2(48 * finalScale, 48 * finalScale)), to: entity)
+        world.addComponent(component: CollisionBoxComponent(size: SIMD2(WorldConstants.playerSize * finalScale, WorldConstants.playerSize * finalScale)), to: entity)
         world.addComponent(component: MassComponent(mass: type.mass), to: entity)
 
         return entity

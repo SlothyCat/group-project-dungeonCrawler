@@ -38,7 +38,10 @@ public struct ProjectileEntityFactory: EntityFactory {
             : -atan2(direction.y, -direction.x)
         world.addComponent(component: TransformComponent(position: position, rotation: bulletRotation, scale: 1), to: entity)
         world.addComponent(component: VelocityComponent(linear: direction * speed), to: entity)
-        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zPosition: 5), to: entity)
+        world.addComponent(component: SpriteComponent(
+            content: .texture(name: "normalHandgunBullet"),
+            layer: .projectile
+        ), to: entity)
         world.addComponent(component: ProjectileComponent(damage: 10, owner: owner), to: entity)
         world.addComponent(component: EffectiveRangeComponent(base: effectiveRange), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2<Float>(6, 6)), to: entity)

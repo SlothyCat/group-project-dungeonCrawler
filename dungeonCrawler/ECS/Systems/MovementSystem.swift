@@ -12,13 +12,6 @@ public final class MovementSystem: System {
 
     public let priority: Int = 20
 
-    // MARK: - Configuration
-
-    // TODO: Remove when CollisionSystem handles wall entities.
-    public var worldBounds: (minX: Float, maxX: Float, minY: Float, maxY: Float) = (
-        minX: -500, maxX: 500, minY: -500, maxY: 500
-    )
-
     public init() {}
 
     // MARK: - Update
@@ -43,12 +36,7 @@ public final class MovementSystem: System {
             else { continue }
 
             world.modifyComponent(type: TransformComponent.self, for: entity) { transform in
-
-                // Integrate velocity into position.
                 transform.position += velocity.linear * dt
-
-                transform.position.x = max(worldBounds.minX, min(worldBounds.maxX, transform.position.x))
-                transform.position.y = max(worldBounds.minY, min(worldBounds.maxY, transform.position.y))
             }
         }
 
@@ -60,11 +48,9 @@ public final class MovementSystem: System {
 
         for (entity, _, velocity, _) in enemyMovable {
             guard world.getComponent(type: KnockbackComponent.self, for: entity) == nil else { continue }
-            
+
             world.modifyComponent(type: TransformComponent.self, for: entity) { transform in
                 transform.position += velocity.linear * dt
-                transform.position.x = max(worldBounds.minX, min(worldBounds.maxX, transform.position.x))
-                transform.position.y = max(worldBounds.minY, min(worldBounds.maxY, transform.position.y))
             }
         }
     }

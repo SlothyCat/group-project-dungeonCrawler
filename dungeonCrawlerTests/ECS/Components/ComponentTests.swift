@@ -132,42 +132,43 @@ final class ComponentTests: XCTestCase {
     // MARK: - SpriteComponent Tests
     
     func testSpriteComponentDefaultInitialization() {
-        let sprite = SpriteComponent(textureName: "player")
+        let sprite = SpriteComponent(content: .texture(name: "player"))
         
-        XCTAssertEqual(sprite.textureName, "player")
-        XCTAssertEqual(sprite.tintRed, 1.0)
-        XCTAssertEqual(sprite.tintGreen, 1.0)
-        XCTAssertEqual(sprite.tintBlue, 1.0)
-        XCTAssertEqual(sprite.tintAlpha, 1.0)
+        if case .texture(let name) = sprite.content {
+            XCTAssertEqual(name, "player")
+        } else {
+            XCTFail("Expected texture content")
+        }
+        
+        XCTAssertEqual(sprite.tint, SIMD4<Float>(1, 1, 1, 1))
+        XCTAssertEqual(sprite.layer, .entity)
+        XCTAssertEqual(sprite.anchorPoint, SIMD2<Float>(0.5, 0.5))
     }
     
     func testSpriteComponentCustomTint() {
         let sprite = SpriteComponent(
-            textureName: "enemy",
-            tintRed: 1.0,
-            tintGreen: 0.5,
-            tintBlue: 0.5,
-            tintAlpha: 0.8
+            content: .texture(name: "enemy"),
+            tint: SIMD4<Float>(1.0, 0.5, 0.5, 0.8)
         )
         
-        XCTAssertEqual(sprite.textureName, "enemy")
-        XCTAssertEqual(sprite.tintRed, 1.0)
-        XCTAssertEqual(sprite.tintGreen, 0.5)
-        XCTAssertEqual(sprite.tintBlue, 0.5)
-        XCTAssertEqual(sprite.tintAlpha, 0.8)
+        if case .texture(let name) = sprite.content {
+            XCTAssertEqual(name, "enemy")
+        }
+        XCTAssertEqual(sprite.tint.x, 1.0)
+        XCTAssertEqual(sprite.tint.y, 0.5)
+        XCTAssertEqual(sprite.tint.z, 0.5)
+        XCTAssertEqual(sprite.tint.w, 0.8)
     }
     
     func testSpriteComponentRedTint() {
         let sprite = SpriteComponent(
-            textureName: "damage_flash",
-            tintRed: 1.0,
-            tintGreen: 0.0,
-            tintBlue: 0.0
+            content: .texture(name: "damage_flash"),
+            tint: SIMD4<Float>(1.0, 0.0, 0.0, 1.0)
         )
         
-        XCTAssertEqual(sprite.tintRed, 1.0)
-        XCTAssertEqual(sprite.tintGreen, 0.0)
-        XCTAssertEqual(sprite.tintBlue, 0.0)
+        XCTAssertEqual(sprite.tint.x, 1.0)
+        XCTAssertEqual(sprite.tint.y, 0.0)
+        XCTAssertEqual(sprite.tint.z, 0.0)
     }
     
     // MARK: - PlayerTagComponent Tests
@@ -188,7 +189,7 @@ final class ComponentTests: XCTestCase {
         world.addComponent(component: TransformComponent(position: SIMD2<Float>(10, 20)), to: entity)
         world.addComponent(component: VelocityComponent(linear: SIMD2<Float>(5, 5)), to: entity)
         world.addComponent(component: InputComponent(), to: entity)
-        world.addComponent(component: SpriteComponent(textureName: "player"), to: entity)
+        world.addComponent(component: SpriteComponent(content: .texture(name: "player")), to: entity)
         world.addComponent(component: PlayerTagComponent(), to: entity)
         
         // Verify all components exist

@@ -62,7 +62,7 @@ final class StatValueTests: XCTestCase {
     }
 
     func testValueSemantics() {
-        var original = StatValue(base: 50)
+        let original = StatValue(base: 50)
         var copy = original
         copy.current = 999
         XCTAssertEqual(original.current, 50, accuracy: 0.001)

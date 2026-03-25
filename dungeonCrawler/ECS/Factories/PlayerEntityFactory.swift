@@ -45,13 +45,15 @@ public struct PlayerEntityFactory: EntityFactory {
         world.addComponent(component: TransformComponent(position: position, rotation: 0, scale: scale), to: entity)
         world.addComponent(component: VelocityComponent(), to: entity)
         world.addComponent(component: InputComponent(), to: entity)
-        world.addComponent(component: SpriteComponent(textureName: textureName), to: entity)
-        world.addComponent(component: CollisionBoxComponent(size: SIMD2<Float>(28, 28)), to: entity)
+        world.addComponent(component: SpriteComponent(
+            content: .texture(name: textureName),
+            layer: .entity
+        ), to: entity)
         world.addComponent(component: PlayerTagComponent(), to: entity)
         world.addComponent(component: CameraFocusComponent(), to: entity)
         world.addComponent(component: HealthComponent(base: 100), to: entity)
         world.addComponent(component: MoveSpeedComponent(base: 90), to: entity)
-        world.addComponent(component: CollisionBoxComponent(size: SIMD2(48 * scale, 48 * scale)), to: entity)
+        world.addComponent(component: CollisionBoxComponent(size: SIMD2(WorldConstants.playerSize * scale, WorldConstants.playerSize * scale)), to: entity)
         world.addComponent(component: FacingComponent(), to: entity)
         world.addComponent(component: MassComponent(), to: entity)
 

@@ -6,32 +6,67 @@
 //
 
 import Foundation
+import CoreGraphics
+
+/// Defines what to render.
+public enum SpriteContent: Equatable {
+    case texture(name: String)
+    case solidColor(color: SIMD4<Float>)
+}
+
+/// Defines the Z-position layering conceptually.
+public enum RenderLayer: CGFloat {
+    case floor = 0
+    case wall = 1
+    case obstacle = 2
+    case pickUp = 3
+    case weapon = 4
+    case projectile = 5
+    case entity = 6
+    case ui = 10
+}
 
 public struct SpriteComponent: Component {
-    /// Asset catalog name for the entity's texture.
-    public var textureName: String
-
-    /// RGBA tint applied on top of the texture. Default = opaque white (no tint).
-    public var tintRed: Float
-    public var tintGreen: Float
-    public var tintBlue: Float
-    public var tintAlpha: Float
+    public var content: SpriteContent
+    public var tint: SIMD4<Float>
+    public var layer: RenderLayer
     public var renderSize: SIMD2<Float>?
-    public var zPosition: CGFloat
+    public var anchorPoint: SIMD2<Float>
 
+    public init(
+        content: SpriteContent,
+        tint: SIMD4<Float> = SIMD4(1, 1, 1, 1),
+        layer: RenderLayer = .entity,
+        renderSize: SIMD2<Float>? = nil,
+        anchorPoint: SIMD2<Float> = SIMD2(0.5, 0.5)
+    ) {
+        self.content = content
+        self.tint = tint
+        self.layer = layer
+        self.renderSize = renderSize
+        self.anchorPoint = anchorPoint
+    }
+    
+    // Legacy initializer to ease migration for texture-based sprites
     public init(
         textureName: String,
         tintRed: Float = 1, tintGreen: Float = 1,
         tintBlue: Float = 1, tintAlpha: Float = 1,
-        renderSize: SIMD2<Float>? = nil, zPosition: CGFloat = 1
+        renderSize: SIMD2<Float>? = nil, 
+        zPosition: CGFloat = 1
     ) {
-        self.textureName = textureName
-        self.tintRed = tintRed
-        self.tintGreen = tintGreen
-        self.tintBlue = tintBlue
-        self.tintAlpha = tintAlpha
+        self.content = .texture(name: textureName)
+        self.tint = SIMD4(tintRed, tintGreen, tintBlue, tintAlpha)
         self.renderSize = renderSize
-        self.zPosition = zPosition
+        self.anchorPoint = SIMD2(0.5, 0.5)
+        // Best effort layer mapping fallback
+        switch zPosition {
+        case 0: self.layer = .floor
+        case 1: self.layer = .wall
+        case 4: self.layer = .weapon
+        case 5: self.layer = .projectile
+        default: self.layer = .entity
+        }
     }
 }
 
@@ -41,8 +76,8 @@ public extension SpriteComponent {
     /// Solid black rectangle — used for perimeter walls.
     static func wall(size: SIMD2<Float>) -> SpriteComponent {
         SpriteComponent(
-            textureName: "",
-            tintRed: 0, tintGreen: 0, tintBlue: 0, tintAlpha: 1,
+            content: .solidColor(color: SIMD4(0, 0, 0, 1)),
+            layer: .wall,
             renderSize: size
         )
     }
@@ -50,10 +85,18 @@ public extension SpriteComponent {
     /// Solid dark-green rectangle — used for the floor fill.
     static func floor(size: SIMD2<Float>) -> SpriteComponent {
         SpriteComponent(
-            textureName: "",
-            tintRed: 0.13, tintGreen: 0.25, tintBlue: 0.13, tintAlpha: 1,
-            renderSize: size,
-            zPosition: 0
+            content: .solidColor(color: SIMD4(0.13, 0.25, 0.13, 1)),
+            layer: .floor,
+            renderSize: size
+        )
+    }
+
+    /// Solid brown rectangle — used for room obstacles when no texture is available.
+    static func obstacle(size: SIMD2<Float>) -> SpriteComponent {
+        SpriteComponent(
+            content: .solidColor(color: SIMD4(0.45, 0.30, 0.15, 1)),
+            layer: .obstacle,
+            renderSize: size
         )
     }
 }
