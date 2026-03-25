@@ -151,6 +151,7 @@ public final class CollisionSystem: System {
                                    transformA: TransformComponent, transformB: TransformComponent,
                                    world: World) {
 
+        let wallEntities = world.entities(with: WallTag.self)
         let aIsStatic = world.getComponent(type: VelocityComponent.self, for: entityA) == nil
         let bIsStatic = world.getComponent(type: VelocityComponent.self, for: entityB) == nil
         let aIsPlayer = world.getComponent(type: PlayerTagComponent.self, for: entityA) != nil
