@@ -94,12 +94,11 @@ public final class LevelOrchestrator {
         guard var rng = currentRNG else { return }
 
         let doorways   = graph.doorways(for: specification.id)
-        let roomEntity = EntityFactory.makeRoom(
-            in: world,
+        let roomEntity = RoomEntityFactory(
+            roomID: specification.id,
             bounds: specification.bounds,
-            doorways: doorways,
-            roomID: specification.id
-        )
+            doorways: doorways
+        ).make(in: world)
 
         let builder = RoomBuilder(
             world: world,
@@ -168,16 +167,15 @@ public final class LevelOrchestrator {
             }
         } else {
             let scale  = WorldConstants.standardEntityScale
-            let player = EntityFactory.makePlayer(in: world, at: position, scale: scale)
+            let player = PlayerEntityFactory(at: position, scale: scale).make(in: world)
             let weaponOffset = SIMD2<Float>(10, -5)
-            EntityFactory.makeWeapon(
-                in: world,
+            WeaponEntityFactory(
                 ownedBy: player,
                 textureName: "handgun",
                 offset: weaponOffset,
                 scale: scale,
                 lastFiredAt: 0
-            )
+            ).make(in: world)
         }
     }
 

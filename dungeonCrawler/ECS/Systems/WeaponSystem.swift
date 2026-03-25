@@ -62,13 +62,13 @@ public final class WeaponSystem: System {
                         weapon.lastFiredAt = gameTime
                     }
                     // Only for projectile weapon now
-                    EntityFactory.makeProjectile(
+                    ProjectileEntityFactory(
                         from: ownerTransform.position,
                         aimAt: fireDirection,
                         speed: 300,
                         effectiveRange: 400,
-                        owner: ownerEntity,
-                        in: world)
+                        owner: ownerEntity
+                    ).make(in: world)
                 }
             }
         }

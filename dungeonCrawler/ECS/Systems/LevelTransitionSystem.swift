@@ -24,10 +24,11 @@ public final class LevelTransitionSystem: System {
         
         // 2. Manage Cooldown
         if state.transitionCooldown > 0 {
+            let newCooldown = state.transitionCooldown - Float(deltaTime)
             world.modifyComponent(type: LevelStateComponent.self, for: levelStateEntity) { s in
-                s.transitionCooldown -= Float(deltaTime)
+                s.transitionCooldown = newCooldown
             }
-            return
+            if newCooldown > 0 { return }
         }
 
         // 3. Get Player position

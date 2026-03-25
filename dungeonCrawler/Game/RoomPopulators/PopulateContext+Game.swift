@@ -10,12 +10,11 @@ extension PopulateContext {
     /// Spawns an enemy and automatically attaches a `RoomMemberComponent`.
     @discardableResult
     public mutating func spawnEnemy(at position: SIMD2<Float>, type: EnemyType) -> Entity {
-        let enemy = EntityFactory.makeEnemy(
-            in: world,
+        let enemy = EnemyEntityFactory(
             at: position,
             type: type,
             baseScale: scale
-        )
+        ).make(in: world)
         world.addComponent(
             component: RoomMemberComponent(roomID: roomID),
             to: enemy

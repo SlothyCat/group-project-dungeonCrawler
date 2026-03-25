@@ -28,14 +28,14 @@ final class EntityFactoryTests: XCTestCase {
     // MARK: - makePlayer
 
     func testMakePlayerEntityIsAlive() {
-        let entity = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0))
+        let entity = PlayerEntityFactory(at: SIMD2<Float>(0, 0)).make(in: world)
         // Entity is alive if we can query a component from it
         XCTAssertNotNil(world.getComponent(type: TransformComponent.self, for: entity))
     }
 
     func testMakePlayerTransform() {
         let position = SIMD2<Float>(100, 200)
-        let entity = EntityFactory.makePlayer(in: world, at: position)
+        let entity = PlayerEntityFactory(at: position).make(in: world)
         let transform = world.getComponent(type: TransformComponent.self, for: entity)
         XCTAssertNotNil(transform)
         XCTAssertEqual(transform!.position.x, 100, accuracy: 0.001)
@@ -43,7 +43,7 @@ final class EntityFactoryTests: XCTestCase {
     }
 
     func testMakePlayerVelocity() {
-        let entity = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0))
+        let entity = PlayerEntityFactory(at: SIMD2<Float>(0, 0)).make(in: world)
         let velocity = world.getComponent(type: VelocityComponent.self, for: entity)
         XCTAssertNotNil(velocity)
         XCTAssertEqual(velocity!.linear.x, 0, accuracy: 0.001)
@@ -51,12 +51,12 @@ final class EntityFactoryTests: XCTestCase {
     }
 
     func testMakePlayerInput() {
-        let entity = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0))
+        let entity = PlayerEntityFactory(at: SIMD2<Float>(0, 0)).make(in: world)
         XCTAssertNotNil(world.getComponent(type: InputComponent.self, for: entity))
     }
 
     func testMakePlayerSprite() {
-        let entity = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0))
+        let entity = PlayerEntityFactory(at: SIMD2<Float>(0, 0)).make(in: world)
         let sprite = world.getComponent(type: SpriteComponent.self, for: entity)
         XCTAssertNotNil(sprite)
         guard case .texture(let name) = sprite!.content else {
@@ -67,7 +67,7 @@ final class EntityFactoryTests: XCTestCase {
     }
 
     func testMakePlayerCustomTexture() {
-        let entity = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0), textureName: "warrior")
+        let entity = PlayerEntityFactory(at: SIMD2<Float>(0, 0), textureName: "warrior").make(in: world)
         let sprite = world.getComponent(type: SpriteComponent.self, for: entity)
         XCTAssertNotNil(sprite)
         guard case .texture(let name) = sprite!.content else {
@@ -78,12 +78,12 @@ final class EntityFactoryTests: XCTestCase {
     }
 
     func testMakePlayerTag() {
-        let entity = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0))
+        let entity = PlayerEntityFactory(at: SIMD2<Float>(0, 0)).make(in: world)
         XCTAssertNotNil(world.getComponent(type: PlayerTagComponent.self, for: entity))
     }
 
     func testMakePlayerHealth() {
-        let entity = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0))
+        let entity = PlayerEntityFactory(at: SIMD2<Float>(0, 0)).make(in: world)
         let health = world.getComponent(type: HealthComponent.self, for: entity)
         XCTAssertNotNil(health)
         XCTAssertEqual(health!.value.base, 100, accuracy: 0.001)
@@ -91,7 +91,7 @@ final class EntityFactoryTests: XCTestCase {
     }
 
     func testMakePlayerMoveSpeed() {
-        let entity = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0))
+        let entity = PlayerEntityFactory(at: SIMD2<Float>(0, 0)).make(in: world)
         let speed = world.getComponent(type: MoveSpeedComponent.self, for: entity)
         XCTAssertNotNil(speed)
         XCTAssertEqual(speed!.value.base, 90, accuracy: 0.001)
@@ -101,13 +101,13 @@ final class EntityFactoryTests: XCTestCase {
     // MARK: - makePlayer: CollisionBoxComponent
 
     func testMakePlayerHasCollisionBox() {
-        let entity = EntityFactory.makePlayer(in: world, at: .zero)
+        let entity = PlayerEntityFactory(at: .zero).make(in: world)
         XCTAssertNotNil(world.getComponent(type: CollisionBoxComponent.self, for: entity))
     }
 
     func testMakePlayerCollisionBoxSizeMatchesScale() {
         let scale: Float = 2.0
-        let entity = EntityFactory.makePlayer(in: world, at: .zero, scale: scale)
+        let entity = PlayerEntityFactory(at: .zero, scale: scale).make(in: world)
         let box = world.getComponent(type: CollisionBoxComponent.self, for: entity)
         XCTAssertNotNil(box)
         XCTAssertEqual(box!.width, WorldConstants.playerSize * scale, accuracy: 0.001)
@@ -115,21 +115,21 @@ final class EntityFactoryTests: XCTestCase {
     }
 
     func testMakePlayerReturnsDistinctEntities() {
-        let entity1 = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(0, 0))
-        let entity2 = EntityFactory.makePlayer(in: world, at: SIMD2<Float>(10, 10))
+        let entity1 = PlayerEntityFactory(at: SIMD2<Float>(0, 0)).make(in: world)
+        let entity2 = PlayerEntityFactory(at: SIMD2<Float>(10, 10)).make(in: world)
         XCTAssertNotEqual(entity1, entity2)
     }
 
     // MARK: - makeEnemy: entity registration
 
     func testMakeEnemyIsAlive() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertTrue(world.isAlive(entity: enemy))
     }
 
     func testMakeEnemyReturnsUniqueEntities() {
-        let enemy1 = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
-        let enemy2 = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy1 = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
+        let enemy2 = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertNotEqual(enemy1, enemy2)
     }
 
@@ -137,7 +137,7 @@ final class EntityFactoryTests: XCTestCase {
 
     func testMakeEnemyPositionIsSet() {
         let position = SIMD2<Float>(100, 200)
-        let enemy = EntityFactory.makeEnemy(in: world, at: position, type: .charger)
+        let enemy = EnemyEntityFactory(at: position, type: .charger).make(in: world)
         let transform = world.getComponent(type: TransformComponent.self, for: enemy)
         XCTAssertNotNil(transform)
         XCTAssertEqual(transform!.position.x, 100, accuracy: 0.001)
@@ -145,14 +145,14 @@ final class EntityFactoryTests: XCTestCase {
     }
 
     func testMakeEnemyRotationIsZero() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         let transform = world.getComponent(type: TransformComponent.self, for: enemy)
         XCTAssertNotNil(transform)
         XCTAssertEqual(transform!.rotation, 0, accuracy: 0.001)
     }
 
     func testMakeEnemyDefaultBaseScaleUsesTypeScale() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         let transform = world.getComponent(type: TransformComponent.self, for: enemy)
         XCTAssertNotNil(transform)
         XCTAssertEqual(transform!.scale, EnemyType.charger.scale, accuracy: 0.001)
@@ -160,7 +160,7 @@ final class EntityFactoryTests: XCTestCase {
 
     func testMakeEnemyScaleIsBaseScaleTimesTypeScale() {
         let baseScale: Float = 2.0
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .tower, baseScale: baseScale)
+        let enemy = EnemyEntityFactory(at: .zero, type: .tower, baseScale: baseScale).make(in: world)
         let transform = world.getComponent(type: TransformComponent.self, for: enemy)
         XCTAssertNotNil(transform)
         XCTAssertEqual(transform!.scale, baseScale * EnemyType.tower.scale, accuracy: 0.001)
@@ -169,13 +169,13 @@ final class EntityFactoryTests: XCTestCase {
     // MARK: - makeEnemy: SpriteComponent
 
     func testMakeEnemyHasSpriteComponent() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertNotNil(world.getComponent(type: SpriteComponent.self, for: enemy))
     }
 
     func testMakeEnemyTextureMatchesType() {
         for enemyType in [EnemyType.charger, .mummy, .ranger, .tower] {
-            let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: enemyType)
+            let enemy = EnemyEntityFactory(at: .zero, type: enemyType).make(in: world)
             let sprite = world.getComponent(type: SpriteComponent.self, for: enemy)
             XCTAssertNotNil(sprite, "Missing sprite for \(enemyType)")
             guard case .texture(let name) = sprite!.content else {
@@ -189,26 +189,26 @@ final class EntityFactoryTests: XCTestCase {
     // MARK: - makeEnemy: EnemyTagComponent
 
     func testMakeEnemyHasEnemyTag() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertNotNil(world.getComponent(type: EnemyTagComponent.self, for: enemy))
     }
 
-    func testMakeEnemyTagMatchesType() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .mummy)
+    func testMakeEnemyTagStoresCorrectType() {
+        let enemy = EnemyEntityFactory(at: .zero, type: .mummy).make(in: world)
         let tag = world.getComponent(type: EnemyTagComponent.self, for: enemy)
         XCTAssertNotNil(tag)
-        XCTAssertTrue(tag!.enemyType == .mummy)
+        XCTAssertEqual(tag!.enemyType, .mummy)
     }
 
     // MARK: - makeEnemy: VelocityComponent and EnemyStateComponent
 
     func testMakeEnemyHasVelocityComponent() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertNotNil(world.getComponent(type: VelocityComponent.self, for: enemy))
     }
 
     func testMakeEnemyVelocityStartsAtZero() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         let velocity = world.getComponent(type: VelocityComponent.self, for: enemy)
         XCTAssertNotNil(velocity)
         XCTAssertEqual(velocity!.linear.x, 0, accuracy: 0.001)
@@ -216,12 +216,12 @@ final class EntityFactoryTests: XCTestCase {
     }
 
     func testMakeEnemyHasEnemyStateComponent() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertNotNil(world.getComponent(type: EnemyStateComponent.self, for: enemy))
     }
 
     func testMakeEnemyStartsInWanderMode() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         let state = world.getComponent(type: EnemyStateComponent.self, for: enemy)
         XCTAssertNotNil(state)
         XCTAssertTrue(state!.mode == .wander)
@@ -230,13 +230,13 @@ final class EntityFactoryTests: XCTestCase {
     // MARK: - makeEnemy: CollisionBoxComponent
 
     func testMakeEnemyHasCollisionBox() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertNotNil(world.getComponent(type: CollisionBoxComponent.self, for: enemy))
     }
 
     func testMakeEnemyCollisionBoxSizeMatchesScale() {
         let baseScale: Float = 2.0
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger, baseScale: baseScale)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger, baseScale: baseScale).make(in: world)
         let box = world.getComponent(type: CollisionBoxComponent.self, for: enemy)
         let expectedSize = WorldConstants.playerSize * baseScale * EnemyType.charger.scale
         XCTAssertNotNil(box)
@@ -247,27 +247,27 @@ final class EntityFactoryTests: XCTestCase {
     // MARK: - makeEnemy: no player components
 
     func testMakeEnemyHasNoInputComponent() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertNil(world.getComponent(type: InputComponent.self, for: enemy))
     }
 
     func testMakeEnemyHasNoPlayerTag() {
-        let enemy = EntityFactory.makeEnemy(in: world, at: .zero, type: .charger)
+        let enemy = EnemyEntityFactory(at: .zero, type: .charger).make(in: world)
         XCTAssertNil(world.getComponent(type: PlayerTagComponent.self, for: enemy))
     }
 
     // MARK: - makeEnemy: world queries
 
     func testEnemiesQueryableByTag() {
-        EntityFactory.makeEnemy(in: world, at: SIMD2(0, 0),   type: .charger)
-        EntityFactory.makeEnemy(in: world, at: SIMD2(100, 0), type: .mummy)
+        EnemyEntityFactory(at: SIMD2(0, 0),   type: .charger).make(in: world)
+        EnemyEntityFactory(at: SIMD2(100, 0), type: .mummy).make(in: world)
         let enemies = world.entities(with: EnemyTagComponent.self)
         XCTAssertEqual(enemies.count, 2)
     }
 
     func testPlayerAndEnemiesAreIsolated() {
-        EntityFactory.makePlayer(in: world, at: .zero)
-        EntityFactory.makeEnemy(in: world, at: SIMD2(100, 0), type: .charger)
+        PlayerEntityFactory(at: .zero).make(in: world)
+        EnemyEntityFactory(at: SIMD2(100, 0), type: .charger).make(in: world)
 
         let players = world.entities(with: PlayerTagComponent.self)
         let enemies = world.entities(with: EnemyTagComponent.self)
