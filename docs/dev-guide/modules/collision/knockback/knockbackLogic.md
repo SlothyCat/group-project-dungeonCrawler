@@ -1,6 +1,7 @@
 ---
 title: "Knockback"
 description: "How knockback is applied between player and enemy, and between enemies."
+sidebar_position: 1
 ---
 
 # Knockback
@@ -44,15 +45,15 @@ The system moves entities directly via `TransformComponent` — it does **not** 
 
 When a player and enemy overlap, `CollisionSystem` does the following:
 
-1. **Positional nudge** — the player is displaced by `0.1 × MTV`, the enemy by `0.75 × MTV` (normalised MTV). This separates them immediately.
+1. **Positional nudge** — each entity is displaced by a mass-weighted fraction of the MTV, separating them immediately. See [MassComponent](./massComponent.md) for the formula.
 2. **Knockback** — both entities receive a `KnockbackComponent` with:
 
 | Field | Value |
 |---|---|
-| `velocity` | `normalise(MTV) × 150` (away from the other entity) |
+| `velocity` | `normalise(MTV) × (1500 / mass)` (away from the other entity) |
 | `remainingTime` | `0.1` seconds |
 
-The player is knocked away from the enemy and the enemy away from the player simultaneously. Note that the enemy will get a bigger nudge compared to the player.
+Both the nudge and knockback speed are mass-dependent — heavier entities are displaced less and receive a slower impulse.
 
 ---
 
@@ -89,10 +90,4 @@ Systems execute in ascending priority order (lower number = runs first).
 | `15` | `EnemyAISystem` | Skips enemies with `KnockbackComponent` |
 | `20` | `MovementSystem` | Skips entities with `KnockbackComponent` |
 | `30` | `CollisionSystem` | Detects overlaps, adds `KnockbackComponent` |
-
----
-
-### Future Implementation:
-
-We will introduce a mass component so that KnockbackComponent will determine the displacement based on the mass. (larger mass, smaller nudge)
 

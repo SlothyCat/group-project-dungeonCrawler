@@ -35,7 +35,7 @@ Enemy types are defined in the `EnemyType` enum inside `EnemyEntityFactory.swift
 | `.tower` | "Tower" | 1.5 | 20 |
 
 
-The final in-world scale is `baseScale × type.scale`, where `baseScale` is passed in at spawn time (derived from screen size — see [Map System](../room/mapSystem.md)).
+The final in-world scale is `baseScale × type.scale`, where `baseScale` is passed in at spawn time (derived from screen size).
 
 ## Spawning an Enemy
 

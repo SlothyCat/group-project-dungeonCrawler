@@ -74,12 +74,26 @@ Called when a dynamic entity (player or enemy) overlaps a static entity (wall, o
 
 ### resolvePlayerEnemyCollision
 
-Called when a player and an enemy overlap. Both entities are displaced: the player by a small fraction (`0.1 × MTV`), the enemy by a larger fraction (`0.75 × MTV`). Knockback is then applied to both via `applyKnockbackIfNeeded()` if they are not already under a knockback impulse.
+Called when a player and an enemy overlap. Both entities' `MassComponent` values are read to compute a mass-weighted response.
+
+**Positional nudge** — each entity is displaced by the fraction of the MTV proportional to the *other* entity's mass:
+
+```
+player nudge = MTV × (enemyMass / totalMass)
+enemy nudge  = MTV × (playerMass / totalMass)
+```
+
+**Knockback** — each entity's knockback speed is inversely proportional to its own mass:
 
 ```swift
-let knockbackSpeed: Float    = 150   // units per second
-let knockbackDuration: Float = 0.1   // seconds
+let baseKnockbackSpeed: Float = 1500
+let knockbackDuration: Float  = 0.1   // seconds
+
+enemyKnockbackSpeed  = baseKnockbackSpeed / enemyMass
+playerKnockbackSpeed = baseKnockbackSpeed / playerMass
 ```
+
+Knockback is applied to both entities via `applyKnockbackIfNeeded()` if they are not already under an active knockback impulse. If an entity has no `MassComponent`, a default mass of `10` is used. See [MassComponent](./knockback/massComponent.md) for the full mass table.
 
 ### resolveEnemyEnemyCollision
 
