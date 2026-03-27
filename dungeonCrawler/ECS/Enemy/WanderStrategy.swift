@@ -12,8 +12,8 @@ import simd
 /// Simple AI movement when Player is not in range
 public final class WanderStrategy: EnemyAIStrategy {
 
+    // entity refers to Enemy here and the transform is the enemy's transform
     public func update(entity: Entity, transform: TransformComponent, playerPos: SIMD2<Float>, world: World) {
-        /// System that will call this strategy will ensure that Entity has EnemyStateComponent but extra guard here
         guard let currentState = world.getComponent(type: EnemyStateComponent.self, for: entity) else { return }
 
         world.modifyComponent(type: EnemyStateComponent.self, for: entity) { s in

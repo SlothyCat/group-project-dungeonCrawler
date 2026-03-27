@@ -48,29 +48,7 @@ public final class EnemyAISystem: System {
                     vel.linear = normalize(delta) * currentState.chaseSpeed
                 }
             } else {
-                // if there are no targets or considered arrived at wander target,
-                // wander to a new point
-                world.modifyComponent(type: EnemyStateComponent.self, for: enemy) { s in
-                    let arrivalThreshold: Float = 8
-                    if s.wanderTarget == nil ||
-                       simd_length(transform.position - s.wanderTarget!) < arrivalThreshold {
-                        let angle = Float.random(in: 0..<(2 * .pi))
-                        let radius = Float.random(in: 0...s.wanderRadius)
-                        s.wanderTarget = transform.position +
-                            SIMD2(cos(angle) * radius, sin(angle) * radius)
-                    }
-                }
-
-                guard let target = world.getComponent(type: EnemyStateComponent.self,
-                                                      for: enemy)?.wanderTarget
-                else { continue }
-
-                let wanderDelta = target - transform.position
-                guard simd_length_squared(wanderDelta) > 1e-6 else { continue }
-                
-                world.modifyComponent(type: VelocityComponent.self, for: enemy) { vel in
-                    vel.linear = normalize(wanderDelta) * currentState.wanderSpeed
-                }
+                WanderStrategy().update(entity: enemy, transform: transform, playerPos: playerPos, world: world)
             }
         }
     }
