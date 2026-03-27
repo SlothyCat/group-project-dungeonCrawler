@@ -48,4 +48,14 @@ final class RingBuffer<T> {
          }
         return nil
     }
+    
+    func modifyFirst(where predicate: (T?) -> Bool, _ body: (inout T?) -> Void) {
+        for i in 0..<count {
+            let index = (head + i) % storage.count
+            if predicate(storage[index]) {
+                body(&storage[index])
+                return
+            }
+        }
+    }
 }

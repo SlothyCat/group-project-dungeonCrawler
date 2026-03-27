@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class CommandQueue<C: Command> {
+final class CommandQueue<C: Command>: Cancellable {
     private var buffer: RingBuffer<C>
     
     init(capacity: Int) {
@@ -21,4 +21,15 @@ final class CommandQueue<C: Command> {
     func dequeue() -> (C)? {
         return buffer.pop()
     }
+
+    func cancel(commandId: CommandId) {
+        buffer.modifyFirst(
+            where: { $0?.id == commandId }) { slot in
+                slot = nil
+            }
+    }
+}
+
+protocol Cancellable {
+    func cancel(commandId: CommandId)
 }
