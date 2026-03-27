@@ -7,14 +7,16 @@
 
 import Foundation
 
-struct CommandQueues {
+// we make it referenced
+// since systems need to borrow the queues
+class CommandQueues {
     private var queues: [ObjectIdentifier: AnyObject] = [:]
 
     func queue<C: Command>(for type: C.Type) -> CommandQueue<C>? {
         queues[ObjectIdentifier(type)] as? CommandQueue<C>
     }
 
-    mutating func register<C: Command>(_ type: C.Type, capacity: Int = 32) {
+    func register<C: Command>(_ type: C.Type, capacity: Int = 32) {
         queues[ObjectIdentifier(type)] = CommandQueue<C>(capacity: capacity)
     }
 

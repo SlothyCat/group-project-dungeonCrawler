@@ -13,6 +13,17 @@ Encapsulate a request as an object, allowing queueing, validation, cancellation,
 
 `CommandQueues` store all `CommandQueue` instances, which are queues of one specific typed `Command` structs (e.g. `FireCommand`, `ReloadCommand`).
 
+We plan to have the following commands for player actions:
+| Command | Description |
+|---|---|
+| `FireCommand` | Emitted on trigger pull. FiringSystem is the primary consumer. BurstFireComponent generates synthetic FireCommands for subsequent shots within a burst. |
+| `ReloadCommand` | Triggers the reload in ReloadSystem. Auto-emitted by ResourceSystem when ammo hits 0 if auto-reload is enabled. |
+| `SwitchWeaponCommand` | Swaps active weapon slot. SwitchWeaponSystem cancels in-flight bursts and enforces per-slot cooldowns. |
+| `CancelCommand` | Cancels a pending command before it is consumed. Useful for interrupting reloads on dodge roll. |
+| `AimCommand` | Updates aim direction, stored in AimStateComponent. Read by FiringSystem at fire time. |
+
+See ![diagram](./tutorial-7.png) for a visual of how these commands flow through the systems and also the event bus as below.
+
 Every player or AI action (`Command`) becomes a typed struct pushed onto the `CommandQueue` of its own. This decouples the input layer from the execution layer completely. e.g. the AI does not call FiringSystem.fire(), it pushes a FireCommand. 
 
 CommandValidationSystem acts as the guard, so no execution system ever needs to check ammo, mana, or cooldowns itself. 
