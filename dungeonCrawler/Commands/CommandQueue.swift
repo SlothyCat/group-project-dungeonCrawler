@@ -7,14 +7,18 @@
 
 import Foundation
 
-struct CommandQueue {
-    private var buffer = RingBuffer<any Command>(capacity: 128)
+final class CommandQueue<C: Command> {
+    private var buffer: RingBuffer<C>
     
-    mutating func enqueue(_ command: any Command) -> Bool {
-        return buffer.push(command)
+    init(capacity: Int) {
+        self.buffer = RingBuffer(capacity: capacity)
     }
     
-    mutating func dequeue() -> (any Command)? {
+    func enqueue(_ command: C) {
+        buffer.push(command)
+    }
+    
+    func dequeue() -> (C)? {
         return buffer.pop()
     }
 }
