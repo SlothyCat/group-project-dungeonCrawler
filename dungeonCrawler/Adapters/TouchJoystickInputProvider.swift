@@ -121,15 +121,9 @@ public final class TouchJoystickInputProvider: InputProvider {
 
     /// Snap continuous angle to nearest 45° and return a unit vector.
     private func quantise(_ vec: SIMD2<Float>) -> SIMD2<Float> {
-        guard length(vec) > 0.001 else { return .zero }
-        let angle   = atan2(vec.y, vec.x)
-        let step    = Float.pi / 4
-        let snapped = (angle / step).rounded() * step
-        let result  = SIMD2<Float>(cos(snapped), sin(snapped))
-        return SIMD2<Float>(
-            abs(result.x) < 1e-6 ? 0 : result.x,
-            abs(result.y) < 1e-6 ? 0 : result.y
-        )
+        let len = length(vec)
+        guard len > 0.001 else { return .zero }
+        return vec / len
     }
 
     /// UIKit-space handle position, clamped to joystickRadius for drawing.
