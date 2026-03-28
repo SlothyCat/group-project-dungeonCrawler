@@ -33,7 +33,7 @@ class GameScene: SKScene {
 
     // MARK: - Input provider
     private lazy var touchInput = TouchJoystickInputProvider(commandQueues: commandQueues)
-    private lazy var reloadInput = SwitchWeaponButtonInputProvider(commandQueues: commandQueues)
+    private lazy var switchWeaponInput = SwitchWeaponButtonInputProvider(commandQueues: commandQueues)
 
     // MARK: - Collision Events
     let collisionEvents  = CollisionEventBuffer()
@@ -49,12 +49,12 @@ class GameScene: SKScene {
 
     override func didMove(to view: SKView) {
         super.didMove(to: view)
-        view.addSubview(reloadInput.button)
+        view.addSubview(switchWeaponInput.button)
         NSLayoutConstraint.activate([
-            reloadInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
-            reloadInput.button.heightAnchor.constraint(equalTo: reloadInput.button.widthAnchor),
-            reloadInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.2),
-            reloadInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.05),
+            switchWeaponInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
+            switchWeaponInput.button.heightAnchor.constraint(equalTo: switchWeaponInput.button.widthAnchor),
+            switchWeaponInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.2),
+            switchWeaponInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.05),
         ])
     }
 
@@ -122,6 +122,9 @@ class GameScene: SKScene {
 
         systemManager.register(LevelTransitionSystem(orchestrator: levelOrchestrator))
         commandQueues.register(SwitchWeaponCommand.self)
+        commandQueues.register(MoveCommand.self)
+        commandQueues.register(AimCommand.self)
+        commandQueues.register(FireCommand.self)
         systemManager.register(InputSystem(commandQueues: commandQueues))
         systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem())
