@@ -16,6 +16,8 @@ public protocol MoveAndAimInputProvider: AnyObject {
     var rawAimVector: SIMD2<Float> { get }
 
     var isShootPressed: Bool { get }
+
+    var commandQueues: CommandQueues { get }
 }
 
 public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
@@ -27,7 +29,7 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
     public var leftZoneFraction: CGFloat = 0.5
     public var shootThreshold: Float = 0.25
 
-    private let commandQueues: CommandQueues
+    public let commandQueues: CommandQueues
     
     init(commandQueues: CommandQueues) {
         self.commandQueues = commandQueues
@@ -165,8 +167,15 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
 // MARK: - MockInputProvider  (unit tests / CI — no UIKit dependency)
 
 public final class MockInputProvider: MoveAndAimInputProvider {
+    public var commandQueues: CommandQueues
+    
     public var rawMoveVector: SIMD2<Float> = .zero
     public var rawAimVector:  SIMD2<Float> = .zero
     public var isShootPressed: Bool = false
-    public init() {}
+    init(commandQueues: CommandQueues) {
+        self.commandQueues = commandQueues
+        commandQueues.register(MoveCommand.self)
+        commandQueues.register(AimCommand.self)
+        commandQueues.register(FireCommand.self)
+    }
 }
