@@ -30,6 +30,16 @@ CommandValidationSystem acts as the guard, so no execution system ever needs to 
 
 CancelCommand lets you abort queued actions (e.g. cancel a reload on dodge roll) without touching the reload state machine. We use similar concept as `Optional` in Java to mark a command as cancelled without removing it from the queue, so the state machine can still see the cancelled command and reset to idle instead of trying to execute it and failing due to missing resources.
 
+The process for adding a new command:
+1. Define the command struct that adapts to `Command` protocol
+2. Find the producer of the command (e.g. player input, AI decision, or an existing system) and make it push the command onto `CommandQueue` in update loop
+3. Create a new system that consumes the command.
+4. Register the command into `CommandQueues` in `GameScene`
+    ```swift
+    commandQueues.register(SwitchWeaponCommand.self)
+    commandQueues.register(MoveCommand.self)
+    ```
+
 ### Observer pattern
 
 > Used in `EventBus`, `ProjectileFiredEvent`, `DamageAppliedEvent`, ...
