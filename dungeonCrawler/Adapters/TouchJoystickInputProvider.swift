@@ -35,14 +35,12 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
         self.commandQueues = commandQueues
     }
 
-    // MARK: - Joystick visual state (read by GameScene to draw the HUD)
+    // MARK: - Joystick visual state (enqueued as JoystickRenderCommand for the HUD)
 
-    /// Where the left joystick base is currently anchored (floating origin).
-    /// nil when the left thumb is not touching.
-    public private(set) var leftBasePosition:    CGPoint? = nil
-    public private(set) var leftHandlePosition:  CGPoint? = nil
-    public private(set) var rightBasePosition:   CGPoint? = nil
-    public private(set) var rightHandlePosition: CGPoint? = nil
+    private var leftBasePosition:    CGPoint? = nil
+    private var leftHandlePosition:  CGPoint? = nil
+    private var rightBasePosition:   CGPoint? = nil
+    private var rightHandlePosition: CGPoint? = nil
 
     // MARK: - InputProvider
 
@@ -128,6 +126,13 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
         commandQueues.push(MoveCommand(id: CommandId(), rawMoveVector: rawMoveVector))
         commandQueues.push(AimCommand(id: CommandId(), rawAimVector: rawAimVector))
         commandQueues.push(FireCommand(id: CommandId(), shooting: isShootPressed))
+        commandQueues.push(JoystickRenderCommand(
+            id: CommandId(),
+            leftBase: leftBasePosition,
+            leftHandle: leftHandlePosition,
+            rightBase: rightBasePosition,
+            rightHandle: rightHandlePosition
+        ))
     }
 
     public func touchesCancelled(_ touches: Set<UITouch>, in view: UIView) {

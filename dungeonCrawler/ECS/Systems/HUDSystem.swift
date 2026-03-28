@@ -1,19 +1,19 @@
 import Foundation
 
 /// Reads the player's health and mana each frame and pushes the values to the HUD backend.
-/// Also reads the joystick positions from the input provider and pushes them to the joystick backend.
+/// Dequeues JoystickRenderCommands to update the joystick backend.
 public final class HUDSystem: System {
 
     public let priority: Int = 95
 
     private weak var backend: HUDBackend?
     private weak var joystickBackend: JoystickBackend?
-    private let inputProvider: InputProvider
+    private let commandQueues: CommandQueues
 
-    public init(backend: HUDBackend, joystickBackend: JoystickBackend? = nil, inputProvider: InputProvider) {
+    public init(backend: HUDBackend, joystickBackend: JoystickBackend? = nil, commandQueues: CommandQueues) {
         self.backend = backend
         self.joystickBackend = joystickBackend
-        self.inputProvider = inputProvider
+        self.commandQueues = commandQueues
     }
 
     public func update(deltaTime: Double, world: World) {
@@ -38,19 +38,17 @@ public final class HUDSystem: System {
     }
 
     private func updateJoysticks() {
-        guard let joystickBackend,
-              let touchInput = inputProvider as? TouchJoystickInputProvider
-        else {
-            // Hide joysticks if using a non-touch provider (like a physical controller)
-            joystickBackend?.updateJoystickBase(side: .left, position: nil)
-            joystickBackend?.updateJoystickBase(side: .right, position: nil)
-            return
+        guard let joystickBackend else { return }
+
+        var latest: JoystickRenderCommand?
+        while let cmd = commandQueues.pop(JoystickRenderCommand.self) {
+            latest = cmd
         }
 
-        joystickBackend.updateJoystickBase(side: .left, position: touchInput.leftBasePosition)
-        joystickBackend.updateJoystickHandle(side: .left, position: touchInput.leftHandlePosition)
-        
-        joystickBackend.updateJoystickBase(side: .right, position: touchInput.rightBasePosition)
-        joystickBackend.updateJoystickHandle(side: .right, position: touchInput.rightHandlePosition)
+        guard let cmd = latest else { return }
+        joystickBackend.updateJoystickBase(side: .left, position: cmd.leftBase)
+        joystickBackend.updateJoystickHandle(side: .left, position: cmd.leftHandle)
+        joystickBackend.updateJoystickBase(side: .right, position: cmd.rightBase)
+        joystickBackend.updateJoystickHandle(side: .right, position: cmd.rightHandle)
     }
 }

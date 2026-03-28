@@ -99,6 +99,7 @@ class GameScene: SKScene {
         commandQueues.register(MoveCommand.self)
         commandQueues.register(AimCommand.self)
         commandQueues.register(FireCommand.self)
+        commandQueues.register(JoystickRenderCommand.self)
         systemManager.register(InputSystem(commandQueues: commandQueues))
         systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem())
@@ -107,7 +108,7 @@ class GameScene: SKScene {
         systemManager.register(WeaponSystem())
         systemManager.register(KnockbackSystem())
         systemManager.register(CameraSystem())
-        systemManager.register(HUDSystem(backend: hudBackend, joystickBackend: joystickBackend, inputProvider: touchInput))
+        systemManager.register(HUDSystem(backend: hudBackend, joystickBackend: joystickBackend, commandQueues: commandQueues))
         systemManager.register(RenderSystem(backend: renderingBackend))
         systemManager.register(ProjectileSystem(events: collisionEvents, destructionQueue: destructionQueue))
     }
