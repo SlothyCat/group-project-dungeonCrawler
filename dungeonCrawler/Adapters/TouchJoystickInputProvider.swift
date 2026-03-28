@@ -9,7 +9,18 @@ import Foundation
 import simd
 import UIKit
 
-public final class TouchJoystickInputProvider: InputProvider {
+/// Abstracts the source of raw input so the system is hardware-agnostic.
+public protocol MoveAndAimInputProvider: AnyObject {
+    var rawMoveVector: SIMD2<Float> { get }
+
+    var rawAimVector: SIMD2<Float> { get }
+
+    var isShootPressed: Bool { get }
+
+    var commandQueues: CommandQueues { get }
+}
+
+public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
 
     // MARK: - Configuration
 
@@ -18,19 +29,25 @@ public final class TouchJoystickInputProvider: InputProvider {
     public var leftZoneFraction: CGFloat = 0.5
     public var shootThreshold: Float = 0.25
 
-    // MARK: - Joystick visual state (read by GameScene to draw the HUD)
+    public let commandQueues: CommandQueues
+    
+    init(commandQueues: CommandQueues) {
+        self.commandQueues = commandQueues
+    }
 
-    /// Where the left joystick base is currently anchored (floating origin).
-    /// nil when the left thumb is not touching.
-    public private(set) var leftBasePosition:    CGPoint? = nil
-    public private(set) var leftHandlePosition:  CGPoint? = nil
-    public private(set) var rightBasePosition:   CGPoint? = nil
-    public private(set) var rightHandlePosition: CGPoint? = nil
+    // MARK: - Joystick visual state (enqueued as JoystickRenderCommand for the HUD)
+
+    private var leftBasePosition:    CGPoint? = nil
+    private var leftHandlePosition:  CGPoint? = nil
+    private var rightBasePosition:   CGPoint? = nil
+    private var rightHandlePosition: CGPoint? = nil
 
     // MARK: - InputProvider
 
-    public var rawMoveVector: SIMD2<Float> { quantise(deflection(for: _leftStick)) }
-    public var rawAimVector:  SIMD2<Float> { quantise(deflection(for: _rightStick)) }
+    public var rawMoveVector: SIMD2<Float> { upperBound(deflection(for: _leftStick))
+    }
+    public var rawAimVector:  SIMD2<Float> { upperBound(deflection(for: _rightStick))
+    }
     public var isShootPressed: Bool {
         length(deflection(for: _rightStick)) / joystickRadius > shootThreshold
     }
@@ -46,8 +63,6 @@ public final class TouchJoystickInputProvider: InputProvider {
 
     private var _leftStick  = StickState()
     private var _rightStick = StickState()
-
-    public init() {}
 
     // MARK: - Touch forwarding
 
@@ -68,6 +83,7 @@ public final class TouchJoystickInputProvider: InputProvider {
                 }
             }
         }
+        enqueue()
     }
 
     public func touchesMoved(_ touches: Set<UITouch>, in view: UIView) {
@@ -87,6 +103,7 @@ public final class TouchJoystickInputProvider: InputProvider {
                 )
             }
         }
+        enqueue()
     }
 
     public func touchesEnded(_ touches: Set<UITouch>, in view: UIView) {
@@ -102,6 +119,20 @@ public final class TouchJoystickInputProvider: InputProvider {
                 rightHandlePosition = nil
             }
         }
+        enqueue()
+    }
+
+    private func enqueue() {
+        commandQueues.push(MoveCommand(id: CommandId(), rawMoveVector: rawMoveVector))
+        commandQueues.push(AimCommand(id: CommandId(), rawAimVector: rawAimVector))
+        commandQueues.push(FireCommand(id: CommandId(), shooting: isShootPressed))
+        commandQueues.push(JoystickRenderCommand(
+            id: CommandId(),
+            leftBase: leftBasePosition,
+            leftHandle: leftHandlePosition,
+            rightBase: rightBasePosition,
+            rightHandle: rightHandlePosition
+        ))
     }
 
     public func touchesCancelled(_ touches: Set<UITouch>, in view: UIView) {
@@ -119,8 +150,8 @@ public final class TouchJoystickInputProvider: InputProvider {
         return length(vec) > joystickRadius ? normalize(vec) * joystickRadius : vec
     }
 
-    /// Snap continuous angle to nearest 45° and return a unit vector.
-    private func quantise(_ vec: SIMD2<Float>) -> SIMD2<Float> {
+    ///  Prevent too small len and too large movement, which may bypass movement rules
+    private func upperBound(_ vec: SIMD2<Float>) -> SIMD2<Float> {
         let len = length(vec)
         guard len > 0.001 else { return .zero }
         return vec / len
@@ -140,9 +171,16 @@ public final class TouchJoystickInputProvider: InputProvider {
 
 // MARK: - MockInputProvider  (unit tests / CI — no UIKit dependency)
 
-public final class MockInputProvider: InputProvider {
+public final class MockInputProvider: MoveAndAimInputProvider {
+    public var commandQueues: CommandQueues
+    
     public var rawMoveVector: SIMD2<Float> = .zero
     public var rawAimVector:  SIMD2<Float> = .zero
     public var isShootPressed: Bool = false
-    public init() {}
+    init(commandQueues: CommandQueues) {
+        self.commandQueues = commandQueues
+        commandQueues.register(MoveCommand.self)
+        commandQueues.register(AimCommand.self)
+        commandQueues.register(FireCommand.self)
+    }
 }

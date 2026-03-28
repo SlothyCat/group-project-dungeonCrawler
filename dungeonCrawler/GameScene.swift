@@ -30,14 +30,29 @@ class GameScene: SKScene {
     // MARK: - Level service (owns the graph and room lifecycle)
     private var levelOrchestrator: LevelOrchestrator!
 
+    // MARK: - Command queues
+    private let commandQueues = CommandQueues()
+
     // MARK: - Input provider
-    private let touchInput = TouchJoystickInputProvider()
+    private lazy var touchInput = TouchJoystickInputProvider(commandQueues: commandQueues)
+    private lazy var switchWeaponInput = SwitchWeaponButtonInputProvider(commandQueues: commandQueues)
 
     // MARK: - Collision Events
     let collisionEvents  = CollisionEventBuffer()
     let destructionQueue = DestructionQueue()
 
     private var lastUpdateTime: TimeInterval = 0
+
+    override func didMove(to view: SKView) {
+        super.didMove(to: view)
+        view.addSubview(switchWeaponInput.button)
+        NSLayoutConstraint.activate([
+            switchWeaponInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
+            switchWeaponInput.button.heightAnchor.constraint(equalTo: switchWeaponInput.button.widthAnchor),
+            switchWeaponInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.2),
+            switchWeaponInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.05),
+        ])
+    }
 
     override func sceneDidLoad() {
         self.lastUpdateTime = 0
@@ -80,7 +95,12 @@ class GameScene: SKScene {
         levelOrchestrator.tileMapRenderer = tileAdapter
 
         systemManager.register(LevelTransitionSystem(orchestrator: levelOrchestrator))
-        systemManager.register(InputSystem(inputProvider: touchInput))
+        commandQueues.register(SwitchWeaponCommand.self)
+        commandQueues.register(MoveCommand.self)
+        commandQueues.register(AimCommand.self)
+        commandQueues.register(FireCommand.self)
+        commandQueues.register(JoystickRenderCommand.self)
+        systemManager.register(InputSystem(commandQueues: commandQueues))
         systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem())
         systemManager.register(MovementSystem())
@@ -88,7 +108,7 @@ class GameScene: SKScene {
         systemManager.register(WeaponSystem())
         systemManager.register(KnockbackSystem())
         systemManager.register(CameraSystem())
-        systemManager.register(HUDSystem(backend: hudBackend, joystickBackend: joystickBackend, inputProvider: touchInput))
+        systemManager.register(HUDSystem(backend: hudBackend, joystickBackend: joystickBackend, commandQueues: commandQueues))
         systemManager.register(RenderSystem(backend: renderingBackend))
         systemManager.register(ProjectileSystem(events: collisionEvents, destructionQueue: destructionQueue))
     }

@@ -1,7 +1,7 @@
 ---
 title: "Weapon Component"
 description: "How weapon entities are created and managed."
-sidebar_position: 1
+sidebar_position: 2
 ---
 
 # Weapon Component

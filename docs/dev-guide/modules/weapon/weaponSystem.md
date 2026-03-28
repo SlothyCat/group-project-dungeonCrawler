@@ -1,7 +1,7 @@
 ---
 title: "Weapon System"
 description: "How the weapon system positions weapons and fires projectiles."
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # Weapon System

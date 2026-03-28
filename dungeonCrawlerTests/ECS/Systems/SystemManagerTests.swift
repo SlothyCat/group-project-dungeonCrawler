@@ -82,24 +82,21 @@ final class SystemManagerTests: XCTestCase {
     var world: World!
     var world1: World!
     var world2: World!
-    var mockInput: MockInputProvider!
-    
+
     override func setUp() {
         super.setUp()
         systemManager = SystemManager()
         world = World()
         world1 = World()
         world2 = World()
-        mockInput = MockInputProvider()
         OrderTrackingSystem.reset()
     }
-    
+
     override func tearDown() {
         systemManager = nil
         world = nil
         world1 = nil
         world2 = nil
-        mockInput = nil
         super.tearDown()
     }
     
@@ -278,20 +275,22 @@ final class SystemManagerTests: XCTestCase {
         world.addComponent(component: InputComponent(), to: entity)
         world.addComponent(component: MoveSpeedComponent(base: 100), to: entity)
 
-        mockInput.rawMoveVector = SIMD2<Float>(1, 0)
+        let commandQueues = CommandQueues()
+        commandQueues.register(MoveCommand.self)
+        commandQueues.push(MoveCommand(id: UUID(), rawMoveVector: SIMD2<Float>(1, 0)))
 
         let movementSystem = MovementSystem()
-        let inputSystem = InputSystem(inputProvider: mockInput)
-        
+        let inputSystem = InputSystem(commandQueues: commandQueues)
+
         systemManager.register(inputSystem)
         systemManager.register(movementSystem)
-        
+
         systemManager.update(deltaTime: 0.1, world: world)
-        
+
         // Verify input was processed
         let input = world.getComponent(type: InputComponent.self, for: entity)
         XCTAssertEqual(input?.moveDirection.x, 1)
-        
+
         // Verify movement occurred
         let transform = world.getComponent(type: TransformComponent.self, for: entity)
         XCTAssertNotNil(transform)

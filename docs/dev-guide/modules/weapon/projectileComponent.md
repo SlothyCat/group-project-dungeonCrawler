@@ -1,7 +1,7 @@
 ---
 title: "Projectile Component"
 description: "How projectile entities are created and managed."
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Projectile Component
