@@ -109,7 +109,7 @@ class GameScene: SKScene {
         systemManager.register(HealthSystem(destructionQueue: destructionQueue, playerDeathEvent: playerDeathEvent))
         systemManager.register(MovementSystem())
         systemManager.register(CollisionSystem(events: collisionEvents, destructionQueue: destructionQueue))
-        systemManager.register(DamageSystem(events: collisionEvents))
+        systemManager.register(DamageSystem(events: collisionEvents, destructionQueue: destructionQueue))
         systemManager.register(InvincibilitySystem())
         systemManager.register(WeaponSystem())
         systemManager.register(KnockbackSystem())

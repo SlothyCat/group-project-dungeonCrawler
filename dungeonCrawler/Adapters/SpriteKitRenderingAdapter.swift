@@ -23,7 +23,8 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         transform: TransformComponent,
         sprite: SpriteComponent,
         facing: FacingComponent?,
-        velocity: VelocityComponent?
+        velocity: VelocityComponent?,
+        healthRatio: Float?
     ) {
         guard let worldLayer else { return }
         let node = node(for: entity, sprite: sprite, in: worldLayer)
@@ -65,6 +66,12 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         // Color blend should be absolute for solids, or conditional for textures based on tint
         let isWhiteTint = sprite.tint.x == 1 && sprite.tint.y == 1 && sprite.tint.z == 1
         node.colorBlendFactor = isColourContent ? 1.0 : (isWhiteTint ? 0.0 : 1.0)
+        
+        if let ratio = healthRatio {
+            updateHealthBar(on: node, ratio: CGFloat(ratio))
+        } else {
+            node.childNode(withName: "healthBarBG")?.removeFromParent()
+        }
     }
 
     public func removeNode(for entity: Entity) {
@@ -99,5 +106,40 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         parent.addChild(node)
         nodeRegistry[entity] = node
         return node
+    }
+    
+    private func updateHealthBar(on parent: SKSpriteNode, ratio: CGFloat) {
+        let barWidth: CGFloat = 30
+        let barHeight: CGFloat = 4
+
+        var bgNode = parent.childNode(withName: "healthBarBG") as? SKSpriteNode
+        
+        // Create the health bar if it doesn't exist yet
+        if bgNode == nil {
+            bgNode = SKSpriteNode(color: SKColor(white: 0.1, alpha: 0.8), size: CGSize(width: barWidth + 2, height: barHeight + 2))
+            bgNode?.name = "healthBarBG"
+            
+            // Position slightly above the entity
+            let yOffset = (parent.size.height / 2) + 10
+            bgNode?.position = CGPoint(x: 0, y: yOffset)
+            bgNode?.zPosition = 10
+
+            let fillNode = SKSpriteNode(color: .red, size: CGSize(width: barWidth, height: barHeight))
+            fillNode.name = "healthBarFill"
+            fillNode.anchorPoint = CGPoint(x: 0, y: 0.5) // Anchor left so it scales right-to-left
+            fillNode.position = CGPoint(x: -barWidth / 2, y: 0)
+            fillNode.zPosition = 1
+
+            bgNode?.addChild(fillNode)
+            parent.addChild(bgNode!)
+        }
+
+        // Counter-flip the health bar so it doesn't render backwards when the enemy faces left
+        bgNode?.xScale = parent.xScale < 0 ? -1.0 : 1.0
+
+        // Update the red fill width
+        if let fillNode = bgNode?.childNode(withName: "healthBarFill") as? SKSpriteNode {
+            fillNode.xScale = max(0, min(1, ratio))
+        }
     }
 }

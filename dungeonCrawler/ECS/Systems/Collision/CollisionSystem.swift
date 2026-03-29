@@ -58,6 +58,8 @@ public final class CollisionSystem: System {
         let bIsProjectile = world.getComponent(type: ProjectileComponent.self, for: entityB) != nil
         let aIsSolid      = isSolid(entityA, world: world)
         let bIsSolid      = isSolid(entityB, world: world)
+        let aIsEnemy      = isEnemy(entityA, world: world)
+        let bIsEnemy      = isEnemy(entityB, world: world)
  
         // Projectile hits a solid surface — record event, skip physics resolution.
         if aIsProjectile && bIsSolid {
@@ -66,6 +68,24 @@ public final class CollisionSystem: System {
         }
         if bIsProjectile && aIsSolid {
             events.recordProjectileHitSolid(projectile: entityB, solid: entityA)
+            return
+        }
+        
+        // Projectile hits an enemy — record damage event, skip physics resolution.
+        // CombatSystem consumes this to apply damage and destroy the projectile.
+        if aIsProjectile && bIsEnemy {
+            let damage = world.getComponent(type: ProjectileComponent.self, for: entityA)?.damage ?? 0
+            // Guard: a projectile should not damage its own owner
+            let ownerID = world.getComponent(type: ProjectileComponent.self, for: entityA)?.owner.id
+            guard ownerID != entityB.id else { return }
+            events.recordProjectileHitEnemy(projectile: entityA, enemy: entityB, damage: damage)
+            return
+        }
+        if bIsProjectile && aIsEnemy {
+            let damage = world.getComponent(type: ProjectileComponent.self, for: entityB)?.damage ?? 0
+            let ownerID = world.getComponent(type: ProjectileComponent.self, for: entityB)?.owner.id
+            guard ownerID != entityA.id else { return }
+            events.recordProjectileHitEnemy(projectile: entityB, enemy: entityA, damage: damage)
             return
         }
  
@@ -86,6 +106,11 @@ public final class CollisionSystem: System {
     private func isSolid(_ entity: Entity, world: World) -> Bool {
         world.getComponent(type: WallTag.self,     for: entity) != nil ||
         world.getComponent(type: ObstacleTag.self, for: entity) != nil
+    }
+    
+    /// An enemy is any entity tagged with EnemyTag.
+    private func isEnemy(_ entity: Entity, world: World) -> Bool {
+        world.getComponent(type: EnemyTagComponent.self, for: entity) != nil
     }
 
     /// Returns true if the two OBBs overlap.

@@ -45,6 +45,8 @@ public struct ProjectileEntityFactory: EntityFactory {
         world.addComponent(component: ProjectileComponent(damage: 10, owner: owner), to: entity)
         world.addComponent(component: EffectiveRangeComponent(base: effectiveRange), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2<Float>(6, 6)), to: entity)
+        // all projectiles are 10 damage for now, can extend this to make it tailored to the weapon
+        world.addComponent(component: ContactDamageComponent(damage: 10), to: entity)
         return entity
     }
 }
