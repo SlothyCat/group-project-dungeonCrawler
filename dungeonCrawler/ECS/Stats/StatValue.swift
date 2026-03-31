@@ -23,4 +23,8 @@ public struct StatValue {
             current = Swift.min(max, current)
         }
     }
+    
+    public mutating func clampToMin(_ floor: Float = 0) {
+        current = Swift.max(floor, current)
+    }
 }

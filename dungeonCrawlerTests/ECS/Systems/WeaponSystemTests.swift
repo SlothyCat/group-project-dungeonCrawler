@@ -31,7 +31,9 @@ final class WeaponSystemTests: XCTestCase {
         isShooting: Bool = false,
         aimDirection: SIMD2<Float> = SIMD2(1, 0),
         coolDownInterval: TimeInterval = 1.0,
-        lastFiredAt: Float = 0
+        lastFiredAt: Float = 0,
+        weaponDamage: Float = 25,
+        weaponManaCost: Float = 0
     ) -> (owner: Entity, weapon: Entity) {
         let owner = world.createEntity()
         world.addComponent(component: TransformComponent(position: ownerPosition), to: owner)
@@ -51,7 +53,8 @@ final class WeaponSystemTests: XCTestCase {
         world.addComponent(component: FacingComponent(facing: facingOfOwner), to: weapon)
         world.addComponent(component: WeaponComponent(
             type: .handgun,
-            manaCost: 0,
+            damage: weaponDamage,
+            manaCost: weaponManaCost,
             attackSpeed: 1,
             coolDownInterval: coolDownInterval,
             lastFiredAt: lastFiredAt
@@ -60,11 +63,17 @@ final class WeaponSystemTests: XCTestCase {
         return (owner, weapon)
     }
 
+    private func addMana(to owner: Entity, current: Float, max: Float = 100, regenRate: Float = 0) {
+        var mana = ManaComponent(base: current, max: max, regenRate: regenRate)
+        mana.value.current = current
+        world.addComponent(component: mana, to: owner)
+    }
+
     private func getSpawnedProjectiles() -> [Entity] {
         world.entities(with: ProjectileComponent.self)
     }
 
-    // Position, mirror offset
+    // MARK: - Position and mirror offset
 
     func testWeaponPositionFollowsOwnerFacingRight() {
         let (_, weapon) = makeWeaponWithOwner(
@@ -72,13 +81,10 @@ final class WeaponSystemTests: XCTestCase {
             ownerVelocity: SIMD2(1, 0),
             offset: SIMD2(10, -5)
         )
-
         system.update(deltaTime: 0.1, world: world)
-
         let transform = world.getComponent(type: TransformComponent.self, for: weapon)!
-        // offset unmirrored: 100 + 10 = 110, 50 + (-5) = 45
         XCTAssertEqual(transform.position.x, 110, accuracy: 0.01)
-        XCTAssertEqual(transform.position.y, 45, accuracy: 0.01)
+        XCTAssertEqual(transform.position.y,  45, accuracy: 0.01)
     }
 
     func testWeaponOffsetXMirroredWhenFacingLeft() {
@@ -87,11 +93,8 @@ final class WeaponSystemTests: XCTestCase {
             ownerVelocity: SIMD2(-1, 0),
             offset: SIMD2(10, -5)
         )
-
         system.update(deltaTime: 0.1, world: world)
-
         let transform = world.getComponent(type: TransformComponent.self, for: weapon)!
-        // offset.x negated: 100 + (-10) = 90, y unchanged: 50 + (-5) = 45
         XCTAssertEqual(transform.position.x, 90, accuracy: 0.01)
         XCTAssertEqual(transform.position.y, 45, accuracy: 0.01)
     }
@@ -111,16 +114,9 @@ final class WeaponSystemTests: XCTestCase {
     }
 
     func testWeaponDefaultsFacingRightWhenVelocityIsZero() {
-        let (_, weapon) = makeWeaponWithOwner(
-            ownerPosition: .zero,
-            ownerVelocity: .zero,
-            offset: SIMD2(10, -5)
-        )
-
+        let (_, weapon) = makeWeaponWithOwner(ownerVelocity: .zero, offset: SIMD2(10, -5))
         system.update(deltaTime: 0.1, world: world)
-
         let transform = world.getComponent(type: TransformComponent.self, for: weapon)!
-        // zero velocity → facingRight = true → offset.x positive
         XCTAssertEqual(transform.position.x, 10, accuracy: 0.01)
         XCTAssertEqual(transform.position.y, -5, accuracy: 0.01)
     }
@@ -131,132 +127,206 @@ final class WeaponSystemTests: XCTestCase {
             ownerVelocity: SIMD2(1, 0),
             offset: SIMD2(10, 0)
         )
-
         system.update(deltaTime: 0.1, world: world)
-
-        // Move owner
-        world.modifyComponent(type: TransformComponent.self, for: owner) { t in
-            t.position = SIMD2(50, 0)
-        }
+        world.modifyComponent(type: TransformComponent.self, for: owner) { $0.position = SIMD2(50, 0) }
         system.update(deltaTime: 0.1, world: world)
-
         let transform = world.getComponent(type: TransformComponent.self, for: weapon)!
         XCTAssertEqual(transform.position.x, 60, accuracy: 0.01)
     }
 
-    // Cooldown
+    // MARK: - Cooldown
 
     func testWeaponDoesNotFireBeforeCooldownElapses() {
-        makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 1.0,
-            lastFiredAt: 0
-        )
-
-        // gameTime after update = 0.5, cooldown = 1.0 → not ready
+        makeWeaponWithOwner(isShooting: true, coolDownInterval: 1.0, lastFiredAt: 0)
         system.update(deltaTime: 0.5, world: world)
-
         XCTAssertTrue(getSpawnedProjectiles().isEmpty)
     }
 
     func testWeaponFiresWhenCooldownElapsed() {
-        makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 0.5,
-            lastFiredAt: 0
-        )
-
-        // gameTime = 1.0 >= cooldown 0.5 → fires
+        makeWeaponWithOwner(isShooting: true, coolDownInterval: 0.5, lastFiredAt: 0)
         system.update(deltaTime: 1.0, world: world)
-
         XCTAssertEqual(getSpawnedProjectiles().count, 1)
     }
 
     func testWeaponUpdatesLastFiredAtAfterFiring() {
-        let (_, weapon) = makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 0.5,
-            lastFiredAt: 0
-        )
-
+        let (_, weapon) = makeWeaponWithOwner(isShooting: true, coolDownInterval: 0.5, lastFiredAt: 0)
         system.update(deltaTime: 1.0, world: world)
-
         let weaponComp = world.getComponent(type: WeaponComponent.self, for: weapon)!
         XCTAssertEqual(weaponComp.lastFiredAt, 1.0, accuracy: 0.001)
     }
 
     func testWeaponDoesNotFireAgainWithinCooldown() {
-        makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 1.0,
-            lastFiredAt: 0
-        )
-
-        system.update(deltaTime: 1.0, world: world) // fires, lastFiredAt = 1.0
-        system.update(deltaTime: 0.5, world: world) // gameTime = 1.5, diff = 0.5 < 1.0 → blocked
-
+        makeWeaponWithOwner(isShooting: true, coolDownInterval: 1.0, lastFiredAt: 0)
+        system.update(deltaTime: 1.0, world: world)
+        system.update(deltaTime: 0.5, world: world)
         XCTAssertEqual(getSpawnedProjectiles().count, 1)
     }
 
     func testWeaponFiresAgainAfterCooldownResets() {
-        makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 1.0,
-            lastFiredAt: 0
-        )
-
-        system.update(deltaTime: 1.0, world: world) // fires, lastFiredAt = 1.0
-        system.update(deltaTime: 1.0, world: world) // gameTime = 2.0, diff = 1.0 >= 1.0 → fires again
-
+        makeWeaponWithOwner(isShooting: true, coolDownInterval: 1.0, lastFiredAt: 0)
+        system.update(deltaTime: 1.0, world: world)
+        system.update(deltaTime: 1.0, world: world)
         XCTAssertEqual(getSpawnedProjectiles().count, 2)
     }
 
     func testWeaponDoesNotFireWhenNotShooting() {
-        makeWeaponWithOwner(
-            isShooting: false,
-            aimDirection: SIMD2(1, 0),
+        makeWeaponWithOwner(isShooting: false, coolDownInterval: 0.5, lastFiredAt: 0)
+        system.update(deltaTime: 1.0, world: world)
+        XCTAssertTrue(getSpawnedProjectiles().isEmpty)
+    }
+
+    // MARK: - Mana gate
+
+    func testWeaponBlockedWhenInsufficientMana() {
+        let (owner, _) = makeWeaponWithOwner(
+            isShooting: true,
             coolDownInterval: 0.5,
-            lastFiredAt: 0
+            lastFiredAt: 0,
+            weaponManaCost: 20
         )
+        addMana(to: owner, current: 10, max: 100) // only 10, need 20
 
         system.update(deltaTime: 1.0, world: world)
 
         XCTAssertTrue(getSpawnedProjectiles().isEmpty)
     }
 
-    // Projectile
+    func testWeaponFiresWhenManaExactlyEqualsToCost() {
+        let (owner, _) = makeWeaponWithOwner(
+            isShooting: true,
+            coolDownInterval: 0.5,
+            lastFiredAt: 0,
+            weaponManaCost: 20
+        )
+        addMana(to: owner, current: 20, max: 100)
+
+        system.update(deltaTime: 1.0, world: world)
+
+        XCTAssertEqual(getSpawnedProjectiles().count, 1)
+    }
+
+    func testWeaponFiresWhenManaSufficient() {
+        let (owner, _) = makeWeaponWithOwner(
+            isShooting: true,
+            coolDownInterval: 0.5,
+            lastFiredAt: 0,
+            weaponManaCost: 10
+        )
+        addMana(to: owner, current: 50, max: 100)
+
+        system.update(deltaTime: 1.0, world: world)
+
+        XCTAssertEqual(getSpawnedProjectiles().count, 1)
+    }
+
+    func testManaDeductedAfterFiring() {
+        let (owner, _) = makeWeaponWithOwner(
+            isShooting: true,
+            coolDownInterval: 0.5,
+            lastFiredAt: 0,
+            weaponManaCost: 15
+        )
+        addMana(to: owner, current: 50, max: 100)
+
+        system.update(deltaTime: 1.0, world: world)
+
+        let mana = world.getComponent(type: ManaComponent.self, for: owner)!
+        XCTAssertEqual(mana.value.current, 35, accuracy: 0.001)
+    }
+
+    func testManaNotDeductedWhenShotBlocked() {
+        let (owner, _) = makeWeaponWithOwner(
+            isShooting: true,
+            coolDownInterval: 0.5,
+            lastFiredAt: 0,
+            weaponManaCost: 20
+        )
+        addMana(to: owner, current: 10, max: 100)
+
+        system.update(deltaTime: 1.0, world: world)
+
+        let mana = world.getComponent(type: ManaComponent.self, for: owner)!
+        XCTAssertEqual(mana.value.current, 10, accuracy: 0.001)
+    }
+
+    func testOwnerWithoutManaComponentFiresFreely() {
+        // No ManaComponent added — gate should not apply
+        makeWeaponWithOwner(
+            isShooting: true,
+            coolDownInterval: 0.5,
+            lastFiredAt: 0,
+            weaponManaCost: 99
+        )
+
+        system.update(deltaTime: 1.0, world: world)
+
+        XCTAssertEqual(getSpawnedProjectiles().count, 1)
+    }
+
+    func testManaClampsToZeroNotNegative() {
+        let (owner, _) = makeWeaponWithOwner(
+            isShooting: true,
+            coolDownInterval: 0.5,
+            lastFiredAt: 0,
+            weaponManaCost: 10
+        )
+        addMana(to: owner, current: 10, max: 100)
+
+        system.update(deltaTime: 1.0, world: world) // fires, mana 10 → 0
+        system.update(deltaTime: 1.0, world: world) // blocked (0 < 10), mana stays 0
+
+        let mana = world.getComponent(type: ManaComponent.self, for: owner)!
+        XCTAssertEqual(mana.value.current, 0, accuracy: 0.001)
+        XCTAssertEqual(getSpawnedProjectiles().count, 1)
+    }
+
+    // MARK: - Projectile carries correct values
+
+    func testSpawnedProjectileHasDamageFromWeapon() {
+        makeWeaponWithOwner(
+            isShooting: true,
+            coolDownInterval: 0.5,
+            lastFiredAt: 0,
+            weaponDamage: 42
+        )
+        system.update(deltaTime: 1.0, world: world)
+
+        let proj = world.getComponent(type: ProjectileComponent.self, for: getSpawnedProjectiles()[0])!
+        XCTAssertEqual(proj.damage, 42, accuracy: 0.001)
+    }
+
+    func testSpawnedProjectileHasManaCostFromWeapon() {
+        let (owner, _) = makeWeaponWithOwner(
+            isShooting: true,
+            coolDownInterval: 0.5,
+            lastFiredAt: 0,
+            weaponManaCost: 18
+        )
+        addMana(to: owner, current: 100, max: 100)
+        system.update(deltaTime: 1.0, world: world)
+
+        let proj = world.getComponent(type: ProjectileComponent.self, for: getSpawnedProjectiles()[0])!
+        XCTAssertEqual(proj.manaCost, 18, accuracy: 0.001)
+    }
+
+    // MARK: - Projectile basic checks
 
     func testSpawnedProjectileHasTransformAtOwnerPosition() {
         makeWeaponWithOwner(
             ownerPosition: SIMD2(50, 30),
             isShooting: true,
-            aimDirection: SIMD2(1, 0),
             coolDownInterval: 0.5,
             lastFiredAt: 0
         )
-
         system.update(deltaTime: 1.0, world: world)
 
-        let projectiles = getSpawnedProjectiles()
-        XCTAssertEqual(projectiles.count, 1)
-        let transform = world.getComponent(type: TransformComponent.self, for: projectiles[0])!
+        let transform = world.getComponent(type: TransformComponent.self, for: getSpawnedProjectiles()[0])!
         XCTAssertEqual(transform.position.x, 50, accuracy: 0.01)
         XCTAssertEqual(transform.position.y, 30, accuracy: 0.01)
     }
 
     func testSpawnedProjectileHasVelocityAlignedWithAimDirection() {
-        makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 0.5,
-            lastFiredAt: 0
-        )
-
+        makeWeaponWithOwner(isShooting: true, aimDirection: SIMD2(1, 0), coolDownInterval: 0.5, lastFiredAt: 0)
         system.update(deltaTime: 1.0, world: world)
 
         let velocity = world.getComponent(type: VelocityComponent.self, for: getSpawnedProjectiles()[0])!
@@ -265,14 +335,7 @@ final class WeaponSystemTests: XCTestCase {
     }
 
     func testSpawnedProjectileVelocityReflectsAimDirection() {
-        // Aim left — velocity.x should be negative
-        makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(-1, 0),
-            coolDownInterval: 0.5,
-            lastFiredAt: 0
-        )
-
+        makeWeaponWithOwner(isShooting: true, aimDirection: SIMD2(-1, 0), coolDownInterval: 0.5, lastFiredAt: 0)
         system.update(deltaTime: 1.0, world: world)
 
         let velocity = world.getComponent(type: VelocityComponent.self, for: getSpawnedProjectiles()[0])!
@@ -280,44 +343,24 @@ final class WeaponSystemTests: XCTestCase {
     }
 
     func testSpawnedProjectileHasSpriteComponent() {
-        makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 0.5,
-            lastFiredAt: 0
-        )
-
+        makeWeaponWithOwner(isShooting: true, coolDownInterval: 0.5, lastFiredAt: 0)
         system.update(deltaTime: 1.0, world: world)
-
-        let sprite = world.getComponent(type: SpriteComponent.self, for: getSpawnedProjectiles()[0])
-        XCTAssertNotNil(sprite)
+        XCTAssertNotNil(world.getComponent(type: SpriteComponent.self, for: getSpawnedProjectiles()[0]))
     }
 
     func testSpawnedProjectileOwnerMatchesPlayerEntity() {
-        let (owner, _) = makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 0.5,
-            lastFiredAt: 0
-        )
-
+        let (owner, _) = makeWeaponWithOwner(isShooting: true, coolDownInterval: 0.5, lastFiredAt: 0)
         system.update(deltaTime: 1.0, world: world)
 
-        let projectileComp = world.getComponent(type: ProjectileComponent.self, for: getSpawnedProjectiles()[0])!
-        XCTAssertEqual(projectileComp.owner, owner)
+        let proj = world.getComponent(type: ProjectileComponent.self, for: getSpawnedProjectiles()[0])!
+        XCTAssertEqual(proj.owner, owner)
     }
 
     func testSpawnedProjectileHasPositiveEffectiveRange() {
-        makeWeaponWithOwner(
-            isShooting: true,
-            aimDirection: SIMD2(1, 0),
-            coolDownInterval: 0.5,
-            lastFiredAt: 0
-        )
-
+        makeWeaponWithOwner(isShooting: true, coolDownInterval: 0.5, lastFiredAt: 0)
         system.update(deltaTime: 1.0, world: world)
 
-        let rangeComp = world.getComponent(type: EffectiveRangeComponent.self, for: getSpawnedProjectiles()[0])!
-        XCTAssertGreaterThan(rangeComp.value.current, 0)
+        let range = world.getComponent(type: EffectiveRangeComponent.self, for: getSpawnedProjectiles()[0])!
+        XCTAssertGreaterThan(range.value.current, 0)
     }
 }

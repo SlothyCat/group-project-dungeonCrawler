@@ -52,6 +52,7 @@ public struct PlayerEntityFactory: EntityFactory {
         world.addComponent(component: PlayerTagComponent(), to: entity)
         world.addComponent(component: CameraFocusComponent(), to: entity)
         world.addComponent(component: HealthComponent(base: 100), to: entity)
+        world.addComponent(component: ManaComponent(base: 100, max: 100, regenRate: 2), to: entity)
         world.addComponent(component: MoveSpeedComponent(base: 90), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2(WorldConstants.playerSize * scale, WorldConstants.playerSize * scale)), to: entity)
         world.addComponent(component: FacingComponent(), to: entity)

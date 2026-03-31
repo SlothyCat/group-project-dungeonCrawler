@@ -43,7 +43,8 @@ public struct WeaponEntityFactory: EntityFactory {
         world.addComponent(component: OwnerComponent(ownerEntity: player, offset: offset), to: entity)
         world.addComponent(component: WeaponComponent(
             type: weaponType,
-            manaCost: 10,
+            damage: weaponType.damage,
+            manaCost: weaponType.manaCost,
             attackSpeed: 1,
             coolDownInterval: weaponType == .sniper ? TimeInterval(0.8) : TimeInterval(0.2),
             lastFiredAt: lastFiredAt

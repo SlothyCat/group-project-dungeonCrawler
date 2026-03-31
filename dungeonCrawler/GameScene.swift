@@ -36,10 +36,14 @@ class GameScene: SKScene {
     // MARK: - Input provider
     private lazy var touchInput = TouchJoystickInputProvider(commandQueues: commandQueues)
     private lazy var switchWeaponInput = SwitchWeaponButtonInputProvider(commandQueues: commandQueues)
+    
+    // MARK: - Game state
+    private var isGameOver = false
 
     // MARK: - Collision Events
     let collisionEvents  = CollisionEventBuffer()
     let destructionQueue = DestructionQueue()
+    let playerDeathEvent = PlayerDeathEvent()
 
     private var lastUpdateTime: TimeInterval = 0
 
@@ -102,9 +106,12 @@ class GameScene: SKScene {
         commandQueues.register(JoystickRenderCommand.self)
         systemManager.register(InputSystem(commandQueues: commandQueues))
         systemManager.register(EnemyAISystem())
-        systemManager.register(HealthSystem())
+        systemManager.register(HealthSystem(destructionQueue: destructionQueue, playerDeathEvent: playerDeathEvent))
+        systemManager.register(ManaSystem())
         systemManager.register(MovementSystem())
         systemManager.register(CollisionSystem(events: collisionEvents, destructionQueue: destructionQueue))
+        systemManager.register(DamageSystem(events: collisionEvents, destructionQueue: destructionQueue))
+        systemManager.register(InvincibilitySystem())
         systemManager.register(WeaponSystem())
         systemManager.register(KnockbackSystem())
         systemManager.register(CameraSystem())
@@ -127,10 +134,66 @@ class GameScene: SKScene {
             world.addComponent(component: CameraFocusComponent(), to: player)
         }
     }
+    
+    // MARK: - Game Over
+     
+    private func handleGameOver() {
+        guard !isGameOver else { return }
+        isGameOver = true
+ 
+        // Freeze the game loop
+        isPaused = true
+ 
+        // Overlay — dark semi-transparent panel
+        let overlay = SKSpriteNode(color: SKColor(white: 0, alpha: 0.65), size: size)
+        overlay.position = .zero
+        overlay.zPosition = 100
+        overlay.name = "gameOverOverlay"
+        uiLayer.addChild(overlay)
+ 
+        // "GAME OVER" label
+        let titleLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        titleLabel.text = "GAME OVER"
+        titleLabel.fontSize = 52
+        titleLabel.fontColor = SKColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1)
+        titleLabel.verticalAlignmentMode = .center
+        titleLabel.position = CGPoint(x: 0, y: 60)
+        titleLabel.zPosition = 101
+        overlay.addChild(titleLabel)
+ 
+        // "Tap to Restart" hint
+        let hintLabel = SKLabelNode(fontNamed: "AvenirNext-Medium")
+        hintLabel.text = "Tap to restart"
+        hintLabel.fontSize = 24
+        hintLabel.fontColor = .white
+        hintLabel.verticalAlignmentMode = .center
+        hintLabel.position = CGPoint(x: 0, y: -20)
+        hintLabel.zPosition = 101
+        overlay.addChild(hintLabel)
+    }
+ 
+    private func restartGame() {
+        // Clean up overlay
+        uiLayer.childNode(withName: "gameOverOverlay")?.removeFromParent()
+ 
+        // Reset state flags
+        isGameOver = false
+        playerDeathEvent.reset()
+        isPaused = false
+        lastUpdateTime = 0
+ 
+        // Tear down all ECS entities and reload
+        world.destroyAllEntities()
+        startLevel(1)
+    }
 
     // MARK: - Touch forwarding
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if isGameOver {
+            restartGame()
+            return
+        }
         guard let view else { return }
         touchInput.touchesBegan(touches, in: view)
     }
@@ -158,6 +221,12 @@ class GameScene: SKScene {
         lastUpdateTime = currentTime
 
         systemManager.update(deltaTime: deltaTime, world: world)
+        
+        // Check for player death after all systems have run this frame
+        if playerDeathEvent.playerDied {
+            handleGameOver()
+            return
+        }
 
         // Apply camera viewport to worldLayer after ECS update.
         if let cameraEntity = world.entities(with: ViewportComponent.self).first,

@@ -55,27 +55,40 @@ public final class WeaponSystem: System {
 
             if ownerInput.isShooting {
                 let isReadyToFire: Bool = (gameTime - weaponComponent.lastFiredAt) >= Float(weaponComponent.coolDownInterval)
-                let aimDirection = ownerInput.aimDirection
-                if isReadyToFire {
-                    // Ensure we never spawn a projectile with a zero-length direction vector.
-                    // fireDirection will never be 0, but fall to facing direction
-                    var fireDirection = aimDirection
-                    let epsilon: Float = 0.001
-                    if simd_length_squared(fireDirection) < epsilon * epsilon {
-                        fireDirection = facingRight ? SIMD2<Float>(1, 0) : SIMD2<Float>(-1, 0)
-                    }
-                    world.modifyComponent(type: WeaponComponent.self, for: weaponEntity) { weapon in
-                        weapon.lastFiredAt = gameTime
-                    }
-                    // Only for projectile weapon now
-                    ProjectileEntityFactory(
-                        from: ownerTransform.position,
-                        aimAt: fireDirection,
-                        speed: 300,
-                        effectiveRange: 400,
-                        owner: ownerEntity
-                    ).make(in: world)
+                guard isReadyToFire else { continue }
+                 
+                // Block firing if the owner has a ManaComponent but not enough mana
+                if let mana = world.getComponent(type: ManaComponent.self, for: ownerEntity) {
+                    guard mana.value.current >= weaponComponent.manaCost else { continue }
                 }
+ 
+                var fireDirection = ownerInput.aimDirection
+                let epsilon: Float = 0.001
+                if simd_length_squared(fireDirection) < epsilon * epsilon {
+                    fireDirection = facingRight ? SIMD2<Float>(1, 0) : SIMD2<Float>(-1, 0)
+                }
+
+                world.modifyComponent(type: ManaComponent.self, for: ownerEntity) { mana in
+                    mana.value.current -= weaponComponent.manaCost
+                    mana.value.clampToMin()
+                    print("current mana value: \(mana.value)")
+                }
+                
+                world.modifyComponent(type: WeaponComponent.self, for: weaponEntity) { weapon in
+                    weapon.lastFiredAt = gameTime
+                }
+                
+                // Only for projectile weapon now
+                ProjectileEntityFactory(
+                    from: ownerTransform.position,
+                    aimAt: fireDirection,
+                    speed: 300,
+                    effectiveRange: 400,
+                    damage: weaponComponent.damage,
+                    manaCost: weaponComponent.manaCost,
+                    owner: ownerEntity
+                ).make(in: world)
+                
             }
         }
     }

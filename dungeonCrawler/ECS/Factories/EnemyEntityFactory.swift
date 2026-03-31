@@ -41,6 +41,15 @@ public enum EnemyType {
         case .tower:   return 20
         }
     }
+    
+    var contactDamage: Float {
+        switch self {
+        case .charger: return 20.0
+        case .mummy:   return 10.0
+        case .ranger:  return 5.0
+        case .tower:   return 15.0
+        }
+    }
 }
 
 // Components attached:
@@ -51,9 +60,10 @@ public enum EnemyType {
 //   • EnemyStateComponent    — AI mode (wander/chase) and related config
 //   • CollisionBoxComponent  — axis-aligned bounding box for collision
 //   • MassComponent          — current mass used by KnockbackSystem
+//   • HealthComponent        — current / max health
+//   • ContactDamageComponent — attack damage
 //
 // Future additions:
-//   • HealthComponent        — current / max health
 //   • CombatStatsComponent   — attack damage, attack speed
 
 public struct EnemyEntityFactory: EntityFactory {
@@ -91,6 +101,8 @@ public struct EnemyEntityFactory: EntityFactory {
         world.addComponent(component: EnemyStateComponent(), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2(WorldConstants.playerSize * finalScale, WorldConstants.playerSize * finalScale)), to: entity)
         world.addComponent(component: MassComponent(mass: type.mass), to: entity)
+        world.addComponent(component: ContactDamageComponent(damage: type.contactDamage), to: entity)
+        world.addComponent(component: HealthComponent(base: 100), to: entity)
 
         return entity
     }
