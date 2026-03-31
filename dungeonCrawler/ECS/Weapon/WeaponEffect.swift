@@ -1,0 +1,12 @@
+//
+//  WeaponEffect.swift
+//  dungeonCrawler
+//
+//  Created by Letian on 31/3/26.
+//
+
+import Foundation
+
+protocol WeaponEffect {
+    func apply(context: inout FireContext) -> FireEffectResult
+}
