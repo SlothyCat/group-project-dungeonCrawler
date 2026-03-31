@@ -1,37 +1,24 @@
 import Foundation
 
+typealias FireBehaviour = (WeaponComponent) -> Void
+
 struct WeaponComponent: Component {
-    var type: WeaponType
+    var fireBehaviour: FireBehaviour
     var manaCost: Float
     var attackSpeed: Float
     var coolDownInterval: TimeInterval
     var lastFiredAt: Float = 0
 
-    init(type: WeaponType,
+    // @escaping as the closure outlive init function call
+    init(fireBehaviour: @escaping FireBehaviour,
          manaCost: Float,
          attackSpeed: Float,
          coolDownInterval: TimeInterval,
-         lastFiredAt: Float) {
-        self.type = type
+         lastFiredAt: Float = 0) {
+        self.fireBehaviour = fireBehaviour
         self.manaCost = manaCost
         self.attackSpeed = attackSpeed
         self.coolDownInterval = coolDownInterval
         self.lastFiredAt = lastFiredAt
-    }
-}
-
-public enum WeaponType: String {
-    case handgun
-    case sword
-    case bow
-    case sniper
-
-    var textureName: String {
-        switch self {
-        case .handgun: return "handgun"
-        case .sniper: return "Sniper"
-        case .sword: return "sword"
-        case .bow: return "bow"
-        }
     }
 }

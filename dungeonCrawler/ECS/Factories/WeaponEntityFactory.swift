@@ -45,9 +45,47 @@ public struct WeaponEntityFactory: EntityFactory {
             type: weaponType,
             manaCost: 10,
             attackSpeed: 1,
-            coolDownInterval: weaponType == .sniper ? TimeInterval(0.8) : TimeInterval(0.2),
+            coolDownInterval: weaponType == .sniper ?  : ,
             lastFiredAt: lastFiredAt
         ), to: entity)
         return entity
     }
 }
+
+enum WeaponType: String {
+
+    case handgun
+//    case sword
+//    case bow
+    case sniper
+
+    var textureName: String {
+        switch self {
+        case .handgun: return "handgun"
+        case .sniper: return "Sniper"
+//        case .sword: return "sword"
+//        case .bow: return "bow"
+        }
+    }
+
+    private func makeComponent(lastFiredAt: Float) -> WeaponComponent {
+        switch self {
+        case .handgun:
+            return WeaponComponent(
+                fireBehaviour: ,
+                manaCost: 10,
+                attackSpeed: 3,
+                coolDownInterval: TimeInterval(0.2),
+                lastFiredAt: lastFiredAt)
+        case .sniper:
+            return WeaponComponent(
+                fireBehaviour: ,
+                manaCost: 20,
+                attackSpeed: 1,
+                coolDownInterval: TimeInterval(0.8),
+                lastFiredAt: lastFiredAt)
+        }
+    }
+}
+
+
