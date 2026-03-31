@@ -135,6 +135,7 @@ All currently registered systems, their responsibilities, and their direct depen
 | `CameraSystem` | Lerps the `ViewportComponent` toward the entity tagged with `CameraFocusComponent` | `MovementSystem` |
 | `HUDSystem` | Pushes player health / mana values to the HUD backend; processes joystick render commands | `HealthSystem` |
 | `RenderSystem` | Draws all visible entities via `RenderingBackend` | `CameraSystem`, `HUDSystem`, `ProjectileSystem` |
+| `ManaSystem ` | Ticks mana regeneration on `ManaComponent` | _(none)_ |
 
 
 ### Dependency Graph

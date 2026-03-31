@@ -7,6 +7,4 @@
 
 import Foundation
 
-enum FiringBehaviors {
-    
-}
+

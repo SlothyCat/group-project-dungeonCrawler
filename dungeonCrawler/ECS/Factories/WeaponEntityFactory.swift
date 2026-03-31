@@ -43,7 +43,8 @@ public struct WeaponEntityFactory: EntityFactory {
         world.addComponent(component: OwnerComponent(ownerEntity: player, offset: offset), to: entity)
         world.addComponent(component: WeaponComponent(
             type: weaponType,
-            manaCost: 10,
+            damage: weaponType.damage,
+            manaCost: weaponType.manaCost,
             attackSpeed: 1,
             coolDownInterval: weaponType == .sniper ?  : ,
             lastFiredAt: lastFiredAt
@@ -84,6 +85,25 @@ enum WeaponType: String {
                 attackSpeed: 1,
                 coolDownInterval: TimeInterval(0.8),
                 lastFiredAt: lastFiredAt)
+        }
+    }
+
+    var damage: Float {
+        switch self {
+        case .handgun: return 15.0
+//        case .bow:     return 20.0
+        case .sniper:  return 50.0
+//        case .sword:   return 25.0
+        }
+    }
+ 
+    /// Mana consumed per shot.
+    var manaCost: Float {
+        switch self {
+        case .handgun: return 5.0
+//        case .bow:     return 8.0
+        case .sniper:  return 20.0
+//        case .sword:   return 0.0
         }
     }
 }
