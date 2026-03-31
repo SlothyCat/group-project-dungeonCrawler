@@ -170,11 +170,12 @@ public final class LevelOrchestrator {
             let player = PlayerEntityFactory(at: position, scale: scale).make(in: world)
             let weaponOffset = SIMD2<Float>(10, -5)
             let handgun = WeaponEntityFactory(
-                ownedBy: player,
-                weaponType: .handgun,
+                player: player,
+                textureName: "handgun",
                 offset: weaponOffset,
                 scale: scale,
-                lastFiredAt: 0
+                lastFiredAt: 0,
+                coolDownIntervel: <#T##TimeInterval?#>
             ).make(in: world)
             let sniper = WeaponEntityFactory(
                 ownedBy: player,

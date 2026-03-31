@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct FireContext {
+public struct FireContext {
     let owner: Entity
     let weapon: Entity
     let fireDirection: SIMD2<Float>

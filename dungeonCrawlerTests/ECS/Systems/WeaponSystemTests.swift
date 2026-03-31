@@ -51,7 +51,7 @@ final class WeaponSystemTests: XCTestCase {
         world.addComponent(component: OwnerComponent(ownerEntity: owner, offset: offset), to: weapon)
         let facingOfOwner = world.getComponent(type: FacingComponent.self, for: owner)!.facing
         world.addComponent(component: FacingComponent(facing: facingOfOwner), to: weapon)
-        world.addComponent(component: WeaponComponent(
+        world.addComponent(component: WeaponTimingComponent(
             type: .handgun,
             damage: weaponDamage,
             manaCost: weaponManaCost,
@@ -151,7 +151,7 @@ final class WeaponSystemTests: XCTestCase {
     func testWeaponUpdatesLastFiredAtAfterFiring() {
         let (_, weapon) = makeWeaponWithOwner(isShooting: true, coolDownInterval: 0.5, lastFiredAt: 0)
         system.update(deltaTime: 1.0, world: world)
-        let weaponComp = world.getComponent(type: WeaponComponent.self, for: weapon)!
+        let weaponComp = world.getComponent(type: WeaponTimingComponent.self, for: weapon)!
         XCTAssertEqual(weaponComp.lastFiredAt, 1.0, accuracy: 0.001)
     }
 

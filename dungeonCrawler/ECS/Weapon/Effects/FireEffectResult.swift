@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum FireEffectResult {
+public enum FireEffectResult {
     case success
     case blocked(String)
 }

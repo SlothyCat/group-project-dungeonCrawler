@@ -54,3 +54,6 @@ Adding a new subscriber (e.g. AchievementSystem listening for WeaponBrokenEvent)
 
 ### Projectile
 
+### Weapon
+
+Why WeaponRenderer exists: SpriteComponent can be removed when hiding secondary weapon. On switch, you need a stable place to recover which texture to restore. WeaponEffectsComponent/WeaponTimingComponent should not carry render data.

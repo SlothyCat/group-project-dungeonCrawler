@@ -69,9 +69,9 @@ public final class InputSystem: System {
                 world.removeComponent(type: SpriteComponent.self, from: oldPrimary)
 
                 // Show new primary by restoring its sprite
-                if let weapon = world.getComponent(type: WeaponComponent.self, for: newPrimary) {
+                if let render = world.getComponent(type: WeaponRenderComponent.self, for: newPrimary) {
                     world.addComponent(
-                        component: SpriteComponent(content: .texture(name: weapon.type.textureName), layer: .weapon),
+                        component: SpriteComponent(content: .texture(name: render.textureName), layer: .weapon),
                         to: newPrimary
                     )
                 }

@@ -1,5 +1,5 @@
 //
-//  WeaponDefinition.swift
+//  WeaponEffectComponent.swift
 //  dungeonCrawler
 //
 //  Created by Letian on 31/3/26.
@@ -7,8 +7,6 @@
 
 import Foundation
 
-struct WeaponDefinition {
-    var visual: WeaponVisual
-    var timing: WeaponTiming
+public struct WeaponEffectsComponent: Component {
     var effects: [any WeaponEffect]
 }
