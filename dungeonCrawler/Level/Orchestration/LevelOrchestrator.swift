@@ -82,7 +82,7 @@ public final class LevelOrchestrator {
     public func transition(to nodeID: UUID, world: World) {
         guard let stateEntity = world.entities(with: LevelStateComponent.self).first else { return }
         
-        world.modifyComponent(type: LevelStateComponent.self, for: stateEntity) { state in
+        world.modifyComponentIfExist(type: LevelStateComponent.self, for: stateEntity) { state in
             state.activeNodeID = nodeID
             state.transitionCooldown = WorldConstants.transitionCooldown
         }
@@ -162,7 +162,7 @@ public final class LevelOrchestrator {
 
     private func positionPlayer(at position: SIMD2<Float>, world: World) {
         if let player = world.entities(with: PlayerTagComponent.self).first {
-            world.modifyComponent(type: TransformComponent.self, for: player) { t in
+            world.modifyComponentIfExist(type: TransformComponent.self, for: player) { t in
                 t.position = position
             }
         } else {
@@ -185,37 +185,41 @@ public final class LevelOrchestrator {
                         collisionSize: SIMD2<Float>(6, 6))
                 ]
             ).make(in: world)
-            let sniper = WeaponEntityFactory(
-                player: player,
-                textureName: "Sniper",
-                offset: weaponOffset,
-                scale: scale,
-                lastFiredAt: 0,
-                coolDownIntervel: TimeInterval(0.8),
-                attackSpeed: 1,
-                effects: [
-                    ConsumeManaEffect(amount: 20),
-                    SpawnProjectileEffect(
-                        speed: 300, effectiveRange: 400,
-                        damage: 50, spriteName: "normalHandgunBullet",
-                        collisionSize: SIMD2<Float>(6, 6))
-                ]
-            ).make(in: world)
-            // Sniper starts as secondary — hide its sprite until switched to
-            world.removeComponent(type: SpriteComponent.self, from: sniper)
+//            let sniper = WeaponEntityFactory(
+//                player: player,
+//                textureName: "Sniper",
+//                offset: weaponOffset,
+//                scale: scale,
+//                lastFiredAt: 0,
+//                coolDownIntervel: TimeInterval(0.8),
+//                attackSpeed: 1,
+//                effects: [
+//                    ConsumeManaEffect(amount: 20),
+//                    SpawnProjectileEffect(
+//                        speed: 300, effectiveRange: 400,
+//                        damage: 50, spriteName: "normalHandgunBullet",
+//                        collisionSize: SIMD2<Float>(6, 6))
+//                ]
+//            ).make(in: world)
+//            world.removeComponent(type: SpriteComponent.self, from: sniper)
             let sword = WeaponEntityFactory(
                 player: player,
                 textureName: "sword",
-                offset: SIMD2<Float>(18, -6),
-                scale: 0.4,
+                offset: SIMD2<Float>(12, -6),
+                scale: 0.3,
                 coolDownIntervel: TimeInterval(0.5),
                 attackSpeed: 1,
                 effects: [
-                    ConsumeManaEffect(amount: 20),
                     MeleeDamageEffect(
-                        damage: 50, effectiveRange: 100,
-                        halfAngleDegrees: 90, maxTargets: 1)
-                ]
+                        damage: 50,
+                        range: 100,
+                        halfAngleDegrees: 90,
+                        maxTargets: 1,
+                        swingDuration: 0.14,
+                        swingAngleDegrees: 30
+                    )
+                ],
+                anchorPoint: SIMD2<Float>(0.1, 0.5)
             ).make(in: world)
             world.removeComponent(type: SpriteComponent.self, from: sword)
             world.addComponent(

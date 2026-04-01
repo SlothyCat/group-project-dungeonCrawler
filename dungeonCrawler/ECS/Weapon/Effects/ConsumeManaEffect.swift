@@ -17,7 +17,7 @@ struct ConsumeManaEffect: WeaponEffect {
         guard mana.value.current >= amount else {
             return .blocked("insufficient_mana")
         }
-        context.world.modifyComponent(type: ManaComponent.self, for: context.owner) { mana in
+        context.world.modifyComponentIfExist(type: ManaComponent.self, for: context.owner) { mana in
             mana.value.current -= amount
             mana.value.clampToMin()
         }

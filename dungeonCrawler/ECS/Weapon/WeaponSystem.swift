@@ -12,6 +12,7 @@ public final class WeaponSystem: System {
 
     public func update(deltaTime: Foundation.TimeInterval, world: World) {
         self.gameTime += Float(deltaTime)
+        let delta = Float(deltaTime)
 
         for (weaponEntity, timing, effectsComponent, ownerComponent, _, _) in world.entities(
             with: WeaponTimingComponent.self,
@@ -33,16 +34,31 @@ public final class WeaponSystem: System {
             )
 
             let aimDir = ownerInput.aimDirection
-            let weaponRotation: Float = simd_length(aimDir) > 0.001
+            let defaultWeaponRotation: Float = simd_length(aimDir) > 0.001
                 ? (facingRight ? atan2(aimDir.y, aimDir.x) : -atan2(aimDir.y, -aimDir.x))
                 : 0
 
-            world.modifyComponent(type: TransformComponent.self, for: weaponEntity) { transform in
-                transform.position = ownerTransform.position + mirroredOffset
-                transform.rotation = weaponRotation
+            var renderedRotation = defaultWeaponRotation
+            if let swing = world.getComponent(type: WeaponSwingComponent.self, for: weaponEntity) {
+                let progressedElapsed = swing.elapsed + delta
+                if progressedElapsed >= swing.duration {
+                    world.removeComponent(type: WeaponSwingComponent.self, from: weaponEntity)
+                } else {
+                    let progress = progressedElapsed / swing.duration
+                    let offset = sin(2 * progress * .pi) * swing.amplitude * swing.directionSign
+                    renderedRotation = swing.baseRotation + offset
+                    world.modifyComponentIfExist(type: WeaponSwingComponent.self, for: weaponEntity) { activeSwing in
+                        activeSwing.elapsed = progressedElapsed
+                    }
+                }
             }
 
-            world.modifyComponent(type: FacingComponent.self, for: weaponEntity) { facing in
+            world.modifyComponentIfExist(type: TransformComponent.self, for: weaponEntity) { transform in
+                transform.position = ownerTransform.position + mirroredOffset
+                transform.rotation = renderedRotation
+            }
+
+            world.modifyComponentIfExist(type: FacingComponent.self, for: weaponEntity) { facing in
                 facing.facing = facingRight ? .right : .left
             }
 
@@ -81,7 +97,7 @@ public final class WeaponSystem: System {
 
             guard !blocked else { continue }
 
-            world.modifyComponent(type: WeaponTimingComponent.self, for: weaponEntity) { timing in
+            world.modifyComponentIfExist(type: WeaponTimingComponent.self, for: weaponEntity) { timing in
                 timing.lastFiredAt = gameTime
             }
         }

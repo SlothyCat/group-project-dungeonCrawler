@@ -137,7 +137,7 @@ final class WeaponSystemTests: XCTestCase {
             offset: SIMD2(10, 0)
         )
         system.update(deltaTime: 0.1, world: world)
-        world.modifyComponent(type: TransformComponent.self, for: owner) { $0.position = SIMD2(50, 0) }
+        world.modifyComponentIfExist(type: TransformComponent.self, for: owner) { $0.position = SIMD2(50, 0) }
         system.update(deltaTime: 0.1, world: world)
         let transform = world.getComponent(type: TransformComponent.self, for: weapon)!
         XCTAssertEqual(transform.position.x, 60, accuracy: 0.01)

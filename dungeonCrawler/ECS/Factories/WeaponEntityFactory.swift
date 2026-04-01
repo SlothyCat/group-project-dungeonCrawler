@@ -16,6 +16,7 @@ public struct WeaponEntityFactory: EntityFactory {
     let coolDownIntervel: TimeInterval?
     let attackSpeed: Float?
     let effects: [any WeaponEffect]
+    let anchorPoint: SIMD2<Float>?
 
     public init(
         player: Entity,
@@ -25,7 +26,8 @@ public struct WeaponEntityFactory: EntityFactory {
         lastFiredAt: Float = 0,
         coolDownIntervel: TimeInterval?,
         attackSpeed: Float?,
-        effects: [any WeaponEffect]
+        effects: [any WeaponEffect],
+        anchorPoint: SIMD2<Float>? = nil
     ) {
         self.player = player
         self.textureName = textureName
@@ -35,6 +37,7 @@ public struct WeaponEntityFactory: EntityFactory {
         self.coolDownIntervel = coolDownIntervel
         self.attackSpeed = attackSpeed
         self.effects = effects
+        self.anchorPoint = anchorPoint
     }
 
     @discardableResult
@@ -49,7 +52,10 @@ public struct WeaponEntityFactory: EntityFactory {
         )
         world.addComponent(component: FacingComponent(facing: ownerFacing), to: entity)
         world.addComponent(
-            component: SpriteComponent(content: .texture(name: textureName), layer: .weapon),
+            component: SpriteComponent(
+                content: .texture(name: textureName),
+                layer: .weapon,
+                anchorPoint: anchorPoint ?? SIMD2(0.5, 0.5)),
             to: entity
         )
         world.addComponent(component: OwnerComponent(ownerEntity: player, offset: offset), to: entity)
@@ -59,7 +65,13 @@ public struct WeaponEntityFactory: EntityFactory {
                 coolDownInterval: coolDownIntervel,
                 attackSpeed: attackSpeed),
             to: entity)
-        world.addComponent(component: WeaponRenderComponent(textureName: textureName), to: entity)
+        world.addComponent(
+            component: WeaponRenderComponent(
+                textureName: textureName,
+                anchorPoint: anchorPoint ?? SIMD2(0.5, 0.5)
+            ),
+            to: entity
+        )
         world.addComponent(component: WeaponEffectsComponent(effects: effects), to: entity)
 
         return entity

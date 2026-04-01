@@ -59,8 +59,16 @@ public final class World {
         components.remove(type: type, from: entity)
     }
     
-    public func modifyComponent<T: Component>(type: T.Type, for entity: Entity, body: (inout T) -> Void) {
+    public func modifyComponentIfExist<T: Component>(type: T.Type, for entity: Entity, body: (inout T) -> Void) {
         components.modify(type: type, for: entity, body: body)
+    }
+
+    public func modifyComponent<T: Component>(type: T.Type, for entity: Entity, component: T?, body: (inout T) -> Void) {
+        if components.get(type: type, for: entity) != nil {
+            components.modify(type: type, for: entity, body: body)
+        } else if let newComponent = component {
+            components.add(component: newComponent, to: entity)
+        }
     }
 
     // MARK: - Querying helpers used by Systems
