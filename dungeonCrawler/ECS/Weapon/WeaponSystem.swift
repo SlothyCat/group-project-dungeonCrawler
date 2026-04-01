@@ -37,8 +37,11 @@ public final class WeaponSystem: System {
             let defaultWeaponRotation: Float = simd_length(aimDir) > 0.001
                 ? (facingRight ? atan2(aimDir.y, aimDir.x) : -atan2(aimDir.y, -aimDir.x))
                 : 0
+            let initRotationOffset = world.getComponent(type: WeaponRenderComponent.self, for: weaponEntity)?
+                .initRotation ?? 0
+            let mirroredInitRotation = facingRight ? initRotationOffset : -initRotationOffset
 
-            var renderedRotation = defaultWeaponRotation
+            var renderedRotation = defaultWeaponRotation + mirroredInitRotation
             if let swing = world.getComponent(type: WeaponSwingComponent.self, for: weaponEntity) {
                 let progressedElapsed = swing.elapsed + delta
                 if progressedElapsed >= swing.duration {

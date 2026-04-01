@@ -74,7 +74,8 @@ public final class InputSystem: System {
                         component: SpriteComponent(
                             content: .texture(name: render.textureName),
                             layer: .weapon,
-                            anchorPoint: render.anchorPoint
+                            anchorPoint: render.anchorPoint,
+                            
                         ),
                         to: newPrimary
                     )

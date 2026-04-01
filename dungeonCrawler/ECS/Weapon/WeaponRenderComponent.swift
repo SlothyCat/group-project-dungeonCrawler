@@ -11,4 +11,5 @@ import simd
 public struct WeaponRenderComponent: Component {
     let textureName: String
     let anchorPoint: SIMD2<Float>
+    let initRotation: Float
 }

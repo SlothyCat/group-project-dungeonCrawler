@@ -16,7 +16,8 @@ public struct WeaponEntityFactory: EntityFactory {
     let coolDownIntervel: TimeInterval?
     let attackSpeed: Float?
     let effects: [any WeaponEffect]
-    let anchorPoint: SIMD2<Float>?
+    let anchorPoint: SIMD2<Float>
+    let initRotation: Float
 
     public init(
         player: Entity,
@@ -27,7 +28,8 @@ public struct WeaponEntityFactory: EntityFactory {
         coolDownIntervel: TimeInterval?,
         attackSpeed: Float?,
         effects: [any WeaponEffect],
-        anchorPoint: SIMD2<Float>? = nil
+        anchorPoint: SIMD2<Float>?,
+        initRotation: Float?
     ) {
         self.player = player
         self.textureName = textureName
@@ -37,7 +39,8 @@ public struct WeaponEntityFactory: EntityFactory {
         self.coolDownIntervel = coolDownIntervel
         self.attackSpeed = attackSpeed
         self.effects = effects
-        self.anchorPoint = anchorPoint
+        self.anchorPoint = anchorPoint ?? SIMD2<Float>(0.5, 0.5)
+        self.initRotation = initRotation ?? 0
     }
 
     @discardableResult
@@ -47,7 +50,10 @@ public struct WeaponEntityFactory: EntityFactory {
         let ownerFacing = world.getComponent(type: FacingComponent.self, for: player)?.facing ?? .right
 
         world.addComponent(
-            component: TransformComponent(position: startPos + offset, rotation: 0, scale: scale),
+            component: TransformComponent(
+                position: startPos + offset,
+                rotation: initRotation,
+                scale: scale),
             to: entity
         )
         world.addComponent(component: FacingComponent(facing: ownerFacing), to: entity)
@@ -61,7 +67,8 @@ public struct WeaponEntityFactory: EntityFactory {
         world.addComponent(
             component: WeaponRenderComponent(
                 textureName: textureName,
-                anchorPoint: anchorPoint ?? SIMD2(0.5, 0.5)
+                anchorPoint: anchorPoint,
+                initRotation: initRotation
             ),
             to: entity
         )

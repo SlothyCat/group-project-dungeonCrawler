@@ -183,7 +183,9 @@ public final class LevelOrchestrator {
                         speed: 300, effectiveRange: 400,
                         damage: 15, spriteName: "normalHandgunBullet",
                         collisionSize: SIMD2<Float>(6, 6))
-                ]
+                ],
+                anchorPoint: nil,
+                initRotation: nil
             ).make(in: world)
 //            let sniper = WeaponEntityFactory(
 //                player: player,
@@ -218,7 +220,8 @@ public final class LevelOrchestrator {
                         swingAngleDegrees: 40
                     )
                 ],
-                anchorPoint: SIMD2<Float>(0.1, 0.5)
+                anchorPoint: SIMD2<Float>(0.1, 0.5),
+                initRotation: .pi / 9
             ).make(in: world)
             world.addComponent(
                 component: SpriteComponent(
