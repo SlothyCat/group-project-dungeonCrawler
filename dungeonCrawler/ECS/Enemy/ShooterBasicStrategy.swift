@@ -64,11 +64,11 @@ public struct ShooterBasicStrategy: EnemyAIStrategy {
         } ?? true
 
         if arrived {
-            world.modifyComponent(type: VelocityComponent.self, for: entity) { $0.linear = .zero }
+            world.modifyComponentIfExist(type: VelocityComponent.self, for: entity) { $0.linear = .zero }
 
             // Pick the next target near the current angle
             if let (angle, radius) = pickTarget(from: transform.position, playerPos: playerPos) {
-                world.modifyComponent(type: ShooterBasicComponent.self, for: entity) {
+                world.modifyComponentIfExist(type: ShooterBasicComponent.self, for: entity) {
                     $0.targetAngle = angle
                     $0.targetRadius = radius
                 }
@@ -80,7 +80,7 @@ public struct ShooterBasicStrategy: EnemyAIStrategy {
         let moveDir = target - transform.position
         guard simd_length_squared(moveDir) > 1e-6 else { return }
 
-        world.modifyComponent(type: VelocityComponent.self, for: entity) { vel in
+        world.modifyComponentIfExist(type: VelocityComponent.self, for: entity) { vel in
             vel.linear = normalize(moveDir) * self.moveSpeed
         }
     }
