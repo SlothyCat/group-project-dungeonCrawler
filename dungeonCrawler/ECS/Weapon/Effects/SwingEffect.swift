@@ -7,6 +7,5 @@
 
 import Foundation
 
-struct SwingEffect: WeaponEffect {
-    
-}
+//struct SwingEffect: WeaponEffect {
+//}
