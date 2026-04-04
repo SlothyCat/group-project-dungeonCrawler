@@ -15,7 +15,7 @@ public final class ManaSystem: System {
     
     public func update(deltaTime: Double, world: World) {
         for entity in world.entities(with: ManaComponent.self) {
-            guard var mana = world.getComponent(type: ManaComponent.self, for: entity)
+            guard let mana = world.getComponent(type: ManaComponent.self, for: entity)
             else { continue }
             
             guard mana.regenRate > 0 else { continue }

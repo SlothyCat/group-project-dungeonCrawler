@@ -43,6 +43,13 @@ public struct WeaponEntityFactory: EntityFactory {
         self.initRotation = initRotation ?? 0
     }
 
+    /// Components include:
+    /// Transform Component
+    /// Facing Component
+    /// Owner Component
+    /// Weapon Timing Component
+    /// Weapon Effects Component
+    /// Weapon Render Component
     @discardableResult
     public func make(in world: World) -> Entity {
         let entity = world.createEntity()
