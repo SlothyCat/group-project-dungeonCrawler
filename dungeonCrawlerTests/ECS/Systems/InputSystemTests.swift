@@ -245,24 +245,6 @@ final class InputSystemTests: XCTestCase {
         system.update(deltaTime: 0.016, world: world)
     }
 
-    func testDropAndPickupCommandsAreConsumedWithoutMutatingInputState() {
-        let entity = world.createEntity()
-        world.addComponent(component: InputComponent(), to: entity)
-
-        commandQueues.push(DropWeaponCommand(id: UUID()))
-        commandQueues.push(PickupCommand(id: UUID()))
-
-        system.update(deltaTime: 0.016, world: world)
-
-        XCTAssertNil(commandQueues.peek(DropWeaponCommand.self))
-        XCTAssertNil(commandQueues.peek(PickupCommand.self))
-
-        let input = world.getComponent(type: InputComponent.self, for: entity)
-        XCTAssertEqual(input?.moveDirection, .zero)
-        XCTAssertEqual(input?.aimDirection, .zero)
-        XCTAssertFalse(input?.isShooting ?? true)
-    }
-
     // MARK: - Delta Time Independence
 
     func testDeltaTimeDoesNotAffectInput() {

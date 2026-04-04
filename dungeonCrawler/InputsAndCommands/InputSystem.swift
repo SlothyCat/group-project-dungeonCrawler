@@ -86,6 +86,5 @@ public final class InputSystem: System {
                 }
             }
         }
-        while commandQueues.pop(PickupCommand.self) != nil {}
     }
 }
