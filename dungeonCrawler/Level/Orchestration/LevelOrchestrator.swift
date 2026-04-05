@@ -166,68 +166,44 @@ public final class LevelOrchestrator {
                 t.position = position
             }
         } else {
-            let scale  = WorldConstants.standardEntityScale
-            let player = PlayerEntityFactory(at: position, scale: scale).make(in: world)
-            let weaponOffset = SIMD2<Float>(10, -5)
+            let scaleForPlayer  = WorldConstants.standardEntityScale
+            let player = PlayerEntityFactory(at: position, scale: scaleForPlayer).make(in: world)
+            guard
+                let handgunDefinition = WeaponLibrary.definition(for: "handgun"),
+                let swordDefinition = WeaponLibrary.definition(for: "sword")
+            else {
+                fatalError("Missing built-in starter weapon definitions")
+            }
             let handgun = WeaponEntityFactory(
                 player: player,
-                textureName: "handgun",
-                offset: weaponOffset,
-                scale: scale,
+                textureName: handgunDefinition.textureName,
+                offset: handgunDefinition.offset,
+                scale: handgunDefinition.scale,
                 lastFiredAt: 0,
-                coolDownIntervel: TimeInterval(0.2),
-                attackSpeed: 1,
-                effects: [
-                    ConsumeManaEffect(amount: 5),
-                    SpawnProjectileEffect(
-                        speed: 300, effectiveRange: 400,
-                        damage: 15, spriteName: "normalHandgunBullet",
-                        collisionSize: SIMD2<Float>(6, 6))
-                ],
-                anchorPoint: nil,
-                initRotation: nil
+                coolDownIntervel: handgunDefinition.cooldown,
+                attackSpeed: handgunDefinition.attackSpeed,
+                effects: WeaponEffectFactory.makeEffects(from: handgunDefinition),
+                anchorPoint: handgunDefinition.anchorPoint,
+                initRotation: handgunDefinition.initRotation,
+                initLocation: nil
             ).make(in: world)
-//            let sniper = WeaponEntityFactory(
-//                player: player,
-//                textureName: "Sniper",
-//                offset: weaponOffset,
-//                scale: scale,
-//                lastFiredAt: 0,
-//                coolDownIntervel: TimeInterval(0.8),
-//                attackSpeed: 1,
-//                effects: [
-//                    ConsumeManaEffect(amount: 20),
-//                    SpawnProjectileEffect(
-//                        speed: 300, effectiveRange: 400,
-//                        damage: 50, spriteName: "normalHandgunBullet",
-//                        collisionSize: SIMD2<Float>(6, 6))
-//                ]
-//            ).make(in: world)
             let sword = WeaponEntityFactory(
                 player: player,
-                textureName: "sword",
-                offset: SIMD2<Float>(12, -6),
-                scale: 0.3,
-                coolDownIntervel: TimeInterval(0.5),
-                attackSpeed: 1,
-                effects: [
-                    MeleeDamageEffect(
-                        damage: 50,
-                        range: 100,
-                        halfAngleDegrees: 90,
-                        maxTargets: 1,
-                        swingDuration: 0.3,
-                        swingAngleDegrees: 40
-                    )
-                ],
-                anchorPoint: SIMD2<Float>(0.1, 0.5),
-                initRotation: .pi / 9
+                textureName: swordDefinition.textureName,
+                offset: swordDefinition.offset,
+                scale: swordDefinition.scale,
+                coolDownIntervel: swordDefinition.cooldown,
+                attackSpeed: swordDefinition.attackSpeed,
+                effects: WeaponEffectFactory.makeEffects(from: swordDefinition),
+                anchorPoint: swordDefinition.anchorPoint,
+                initRotation: swordDefinition.initRotation,
+                initLocation: nil
             ).make(in: world)
             world.addComponent(
                 component: SpriteComponent(
-                    content: .texture(name: "handgun"),
+                    content: .texture(name: handgunDefinition.textureName),
                     layer: .weapon,
-                    anchorPoint: SIMD2(0.5, 0.5)),
+                    anchorPoint: handgunDefinition.anchorPoint ?? SIMD2<Float>(0.5, 0.5)),
                 to: handgun)
             world.addComponent(
                 component: EquippedWeaponComponent(primaryWeapon: handgun, secondaryWeapon: sword),
