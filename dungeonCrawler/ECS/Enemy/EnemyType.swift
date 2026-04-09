@@ -11,16 +11,14 @@ public struct EnemyType {
     public let scale: Float
     public let mass: Int
     public let contactDamage: Float
-    public let wanderStrategy: any EnemyAIStrategy
-    public let chaseStrategy: any EnemyAIStrategy
+    public let strategy: any EnemyStrategy
 
     public static let charger = EnemyType(
         textureName: "Charger",
         scale: 1.0,
         mass: 15,
         contactDamage: 20.0,
-        wanderStrategy: WanderStrategy(),
-        chaseStrategy: StraightLineChaseStrategy()
+        strategy: StandardStrategy()
     )
 
     public static let mummy = EnemyType(
@@ -28,8 +26,7 @@ public struct EnemyType {
         scale: 1.0,
         mass: 10,
         contactDamage: 10.0,
-        wanderStrategy: WanderStrategy(),
-        chaseStrategy: StraightLineChaseStrategy()
+        strategy: StandardStrategy()
     )
 
     public static let ranger = EnemyType(
@@ -37,8 +34,7 @@ public struct EnemyType {
         scale: 0.75,
         mass: 5,
         contactDamage: 5.0,
-        wanderStrategy: WanderStrategy(),
-        chaseStrategy: ShooterBasicStrategy()
+        strategy: StandardStrategy(attackBehaviour: ShooterBehaviour())
     )
 
     public static let tower = EnemyType(
@@ -46,7 +42,9 @@ public struct EnemyType {
         scale: 1.5,
         mass: 20,
         contactDamage: 15.0,
-        wanderStrategy: StationaryStrategy(),
-        chaseStrategy: StationaryStrategy()
+        strategy: StandardStrategy(
+            wanderBehaviour: StationaryBehaviour(),
+            attackBehaviour: StationaryBehaviour()
+        )
     )
 }

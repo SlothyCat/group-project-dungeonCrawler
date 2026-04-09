@@ -13,7 +13,7 @@ import simd
 //   • SpriteComponent        — visual representation
 //   • EnemyTagComponent      — marks this as an enemy and holds its type
 //   • VelocityComponent      — movement vector (set each frame by EnemyAISystem)
-//   • EnemyStateComponent    — AI mode (wander/chase) and related config
+//   • EnemyStateComponent    — holds the enemy's EnemyStrategy
 //   • CollisionBoxComponent  — axis-aligned bounding box for collision
 //   • MassComponent          — current mass used by KnockbackSystem
 //   • HealthComponent        — current / max health
@@ -54,10 +54,7 @@ public struct EnemyEntityFactory: EntityFactory {
         ), to: entity)
         
         world.addComponent(component: VelocityComponent(), to: entity)
-        world.addComponent(component: EnemyStateComponent(
-            wanderStrategy: type.wanderStrategy,
-            chaseStrategy: type.chaseStrategy
-        ), to: entity)
+        world.addComponent(component: EnemyStateComponent(strategy: type.strategy), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2(WorldConstants.playerSize * finalScale, WorldConstants.playerSize * finalScale)), to: entity)
         world.addComponent(component: MassComponent(mass: type.mass), to: entity)
         world.addComponent(component: ContactDamageComponent(damage: type.contactDamage), to: entity)

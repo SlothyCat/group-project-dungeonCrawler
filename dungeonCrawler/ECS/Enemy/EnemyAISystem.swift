@@ -14,37 +14,22 @@ public final class EnemyAISystem: System {
     public init() {}
 
     public func update(deltaTime: Double, world: World) {
-        let player = world.entities(with: PlayerTagComponent.self, and: TransformComponent.self)
+        guard let (_, _, playerTransform) = world.entities(
+            with: PlayerTagComponent.self, and: TransformComponent.self
+        ).first else { return }
 
-        guard let (_, _, playerTransform) = player.first else { return }
         let playerPos = playerTransform.position
 
-        let enemies = world.entities(with: EnemyStateComponent.self, and: TransformComponent.self)
-
-        for (enemy, state, transform) in enemies {
+        for (enemy, state, transform) in world.entities(with: EnemyStateComponent.self,
+                                                         and: TransformComponent.self) {
             guard world.getComponent(type: KnockbackComponent.self, for: enemy) == nil else { continue }
             guard world.getComponent(type: VelocityComponent.self, for: enemy) != nil else { continue }
-            guard world.getComponent(type: EnemyStateComponent.self, for: enemy) != nil else { continue }
 
-            let distToPlayer = simd_length(playerPos - transform.position)
-
-            // transition mode based on distance thresholds only
-            // between detectionRadius and loseRadius, mode is unchanged
-            if distToPlayer <= state.detectionRadius {
-                world.modifyComponentIfExist(type: EnemyStateComponent.self, for: enemy) { $0.mode = .chase }
-            } else if distToPlayer > state.loseRadius {
-                world.modifyComponentIfExist(type: EnemyStateComponent.self, for: enemy) { $0.mode = .wander }
-            }
-
-            // compute velocity every frame based on current mode.
-            guard let currentState = world.getComponent(type: EnemyStateComponent.self, for: enemy)
-            else { continue }
-
-            if currentState.mode == .chase {
-                currentState.chaseStrategy.update(entity: enemy, transform: transform, playerPos: playerPos, world: world)
-            } else {
-                currentState.wanderStrategy.update(entity: enemy, transform: transform, playerPos: playerPos, world: world)
-            }
+            let context = BehaviourContext(entity: enemy,
+                                           playerPos: playerPos,
+                                           transform: transform,
+                                           world: world)
+            state.strategy.update(entity: enemy, context: context)
         }
     }
 }
