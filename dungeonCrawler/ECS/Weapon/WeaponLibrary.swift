@@ -6,16 +6,17 @@
 //
 
 import Foundation
+import simd
 
 enum WeaponType: CaseIterable {
     case handgun
     case sword
     case sniper
-
-    var definition: WeaponDefinition {
+    
+    var baseDefinition: WeaponBase {
         switch self {
         case .handgun:
-            return WeaponDefinition(
+            WeaponBase(
                 textureName: "handgun",
                 offset: SIMD2<Float>(10, -5),
                 scale: WorldConstants.standardEntityScale,
@@ -31,10 +32,9 @@ enum WeaponType: CaseIterable {
                 ],
                 anchorPoint: nil,
                 initRotation: nil,
-                initLocation: nil
             )
         case .sword:
-            return WeaponDefinition(
+            WeaponBase(
                 textureName: "sword",
                 offset: SIMD2<Float>(12, -6),
                 scale: 0.3,
@@ -48,11 +48,10 @@ enum WeaponType: CaseIterable {
                         swingDuration: 0.3, swingAngleDegrees: 40)
                 ],
                 anchorPoint: SIMD2<Float>(0.1, 0.5),
-                initRotation: .pi / 9,
-                initLocation: nil
+                initRotation: .pi / 9
             )
         case .sniper:
-            return WeaponDefinition(
+            WeaponBase(
                 textureName: "Sniper",
                 offset: SIMD2<Float>(10, -5),
                 scale: WorldConstants.standardEntityScale,
@@ -68,7 +67,6 @@ enum WeaponType: CaseIterable {
                 ],
                 anchorPoint: nil,
                 initRotation: nil,
-                initLocation: nil,
             )
         }
     }

@@ -115,10 +115,10 @@ public final class LevelGenerationManager {
         } else {
             let scaleForPlayer  = WorldConstants.standardEntityScale
             let player = PlayerEntityFactory(at: position, scale: scaleForPlayer).make(in: world)
-            let handgunDefinition = WeaponType.handgun.definition
-            let swordDefinition = WeaponType.sword.definition
-            let handgun = WeaponEntityFactory(player: player, spec: handgunDefinition).make(in: world)
-            let sword = WeaponEntityFactory(player: player, spec: swordDefinition).make(in: world)
+            let handgunDefinition = WeaponType.handgun.baseDefinition
+            let swordDefinition = WeaponType.sword.baseDefinition
+            let handgun = WeaponEntityFactory(base: handgunDefinition).make(in: world, player: player)
+            let sword = WeaponEntityFactory(base: swordDefinition).make(in: world, player: player)
             world.addComponent(
                 component: SpriteComponent(
                     content: .texture(name: handgunDefinition.textureName),

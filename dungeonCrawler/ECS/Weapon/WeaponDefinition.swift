@@ -1,7 +1,7 @@
 import Foundation
 import simd
 
-public struct WeaponDefinition {
+public struct WeaponBase {
     let textureName: String
     let offset: SIMD2<Float>
     let scale: Float
@@ -11,5 +11,4 @@ public struct WeaponDefinition {
     let effects: [WeaponEffect]
     let anchorPoint: SIMD2<Float>?
     let initRotation: Float?
-    let initLocation: SIMD2<Float>?
 }
