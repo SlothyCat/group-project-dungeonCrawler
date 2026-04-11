@@ -18,10 +18,10 @@
     "left": { "col": 14, "row": 2 },
     "right": { "col": 15, "row": 2 },
     "vertical": [
-      { "col": 13, "row": 1 },
-      { "col": 13, "row": 2 },
+      { "col": 13, "row": 4 },
       { "col": 13, "row": 3 },
-      { "col": 13, "row": 4 }
+      { "col": 13, "row": 2 },
+      { "col": 13, "row": 1 }
     ] 
   },
 
