@@ -14,7 +14,7 @@ public final class LevelOrchestrator {
     public var tileMapRenderer: (any TileMapRenderer)?
     
     // MARK: - State
-    private var currentTheme: TileTheme = .chilling
+    public var currentTheme: TileTheme = .chilling
     private var builtRoomEntities: [UUID: Entity] = [:]
     private var currentGraph: DungeonGraph?
     private var currentRNG: SeededGenerator?

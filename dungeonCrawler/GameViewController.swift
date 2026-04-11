@@ -17,15 +17,15 @@ class GameViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         if let skView = self.view as? SKView, skView.scene == nil {
-            
-            let scene = GameScene(size: view.bounds.size)
+
+            let scene = LevelSelectScene(size: view.bounds.size)
             scene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
             scene.scaleMode = .resizeFill
-            
+
             skView.ignoresSiblingOrder = true
             skView.showsFPS = true
             skView.showsNodeCount = true
-            
+
             skView.presentScene(scene)
         }
     }
