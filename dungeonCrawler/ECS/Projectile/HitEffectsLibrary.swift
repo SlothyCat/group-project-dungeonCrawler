@@ -21,7 +21,7 @@ enum HitEffectsLibrary {
         switch self {
         case .fireZone:
             ZoneBase(
-                textureName: "firezone",
+                textureName: "firearea",
                 radius: 200,
                 damagePerSecond: 20,
                 duration: 3)
