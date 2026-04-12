@@ -194,15 +194,15 @@ final class ShooterBehaviourTests: XCTestCase {
         setTarget(on: enemy, angle: 0, radius: 150)
 
         behaviour.update(entity: enemy, context: makeContext(entity: enemy, playerPos: SIMD2(0, 0)))
-        let vel1 = world.getComponent(type: VelocityComponent.self, for: enemy)!
+        let linear1 = world.getComponent(type: VelocityComponent.self, for: enemy)!.linear
 
         behaviour.update(entity: enemy, context: makeContext(entity: enemy, playerPos: SIMD2(0, 200)))
-        let vel2 = world.getComponent(type: VelocityComponent.self, for: enemy)!
+        let linear2 = world.getComponent(type: VelocityComponent.self, for: enemy)!.linear
 
-        XCTAssertGreaterThan(vel1.linear.x, 0)
-        XCTAssertLessThan(vel1.linear.y, 0, "Enemy should move down when target is below")
-        XCTAssertGreaterThan(vel2.linear.x, 0)
-        XCTAssertGreaterThan(vel2.linear.y, 0, "Enemy should move up when target is above")
+        XCTAssertGreaterThan(linear1.x, 0)
+        XCTAssertLessThan(linear1.y, 0, "Enemy should move down when target is below")
+        XCTAssertGreaterThan(linear2.x, 0)
+        XCTAssertGreaterThan(linear2.y, 0, "Enemy should move up when target is above")
     }
 
     // MARK: - Default parameters
