@@ -9,7 +9,7 @@ import Foundation
 
 public final class RenderSystem: System {
 
-    public var dependencies: [System.Type] { [CameraSystem.self, HUDSystem.self, ProjectileSystem.self, AnimationSystem.self] }
+    public var dependencies: [System.Type] { [CameraSystem.self, HUDSystem.self, ProjectileSystem.self, AnimationSystem.self, LoopingAnimationSystem.self, ParticleEffectSystem.self] }
 
     private weak var backend: RenderingBackend?
     private var seenEntities: Set<Entity> = []
