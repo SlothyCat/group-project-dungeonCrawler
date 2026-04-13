@@ -57,6 +57,7 @@ public final class StarDungeonLayout: DungeonLayoutStrategy {
             direction: .west,
             size: size,
             corridor: corridor,
+            isBoss: true,
             populator: EnemyRoomPopulator(
                 enemyCount: 3 + context.floorIndex,
                 enemyPool: enemyPool

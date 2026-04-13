@@ -30,6 +30,7 @@ public final class LayoutBuilder {
         direction: Direction,
         size: SIMD2<Float>,
         corridor: CorridorSpecification = .init(length: 100),
+        isBoss: Bool = false,
         populator: RoomPopulatorStrategy = EmptyRoomPopulator()
     ) -> UUID {
         guard let fromSpec = graph?.specification(for: fromID) else {
@@ -47,6 +48,7 @@ public final class LayoutBuilder {
             id: nextID,
             bounds: nextBounds,
             isStartRoom: false,
+            isBoss: isBoss,
             populator: populator
         )
 

@@ -93,6 +93,10 @@ public final class LevelGenerationManager {
         self.rng = populateContext.generator
         builtRoomEntities[specification.id] = roomEntity
 
+        if specification.isBoss {
+            world.addComponent(component: BossRoomTag(), to: roomEntity)
+        }
+
         tileMapRenderer?.renderRoom(
             roomID: specification.id,
             bounds: specification.bounds,

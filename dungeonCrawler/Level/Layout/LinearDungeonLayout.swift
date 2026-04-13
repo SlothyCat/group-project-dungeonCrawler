@@ -58,6 +58,7 @@ public final class LinearDungeonLayout: DungeonLayoutStrategy {
                 direction: .east,
                 size: size,
                 corridor: CorridorSpecification(length: corridorLength),
+                isBoss: isBoss,
                 populator: populator
             )
         }

@@ -80,6 +80,7 @@ public final class LShapeDungeonLayout: DungeonLayoutStrategy {
             direction: .east,
             size: size,
             corridor: corridor,
+            isBoss: true,
             populator: EnemyRoomPopulator(
                 enemyCount: 3 + level,
                 enemyPool: enemyPool
