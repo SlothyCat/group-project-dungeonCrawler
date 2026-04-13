@@ -46,9 +46,6 @@ public final class AnimationSystem: System {
             }
 
             sprite.content = .texture(name: frames[anim.frameIndex])
-
-            // Pin facing to .right so the rendering adapter never mirrors directional sprites.
-            world.getComponent(type: FacingComponent.self, for: entity)?.facing = .right
         }
     }
 }

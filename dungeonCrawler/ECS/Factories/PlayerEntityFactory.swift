@@ -20,7 +20,7 @@ import simd
 //   • MassComponent          — current mass used by KnockbackSystem
 //
 // Notes:
-//   • WeaponSlotComponent    — (future) which weapon is equipped
+//   • Equipment Weapon Component — which weapon is equipped
 //   • AnimationComponent     — added by GameScene after spawn, once the character sheet is loaded
 
 public struct PlayerEntityFactory: EntityFactory {

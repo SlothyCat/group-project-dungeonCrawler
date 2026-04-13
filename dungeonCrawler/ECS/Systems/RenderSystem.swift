@@ -37,9 +37,11 @@ public final class RenderSystem: System {
 
             let isPlayer = world.getComponent(type: PlayerTagComponent.self, for: entity) != nil
             let health   = !isPlayer ? world.getComponent(type: HealthComponent.self, for: entity) : nil
+            let hasDirectionalAnimation = world.getComponent(type: AnimationComponent.self, for: entity) != nil
 
             backend.syncNode(for: entity, transform: transform, sprite: sprite,
-                             facing: facing, velocity: velocity, health: health)
+                             facing: facing, velocity: velocity, health: health,
+                             hasDirectionalAnimation: hasDirectionalAnimation)
         }
 
         // Remove nodes for entities that no longer have both components.

@@ -66,7 +66,7 @@ final class PickupSystemTests: XCTestCase {
         world.addComponent(component: playerTransform, to: playerEntity)
         world.addComponent(component: playerFacing,    to: playerEntity)
 
-        primaryWeaponOwner = OwnerComponent(ownerEntity: playerEntity, offset: SIMD2<Float>(10, -5))
+        primaryWeaponOwner = OwnerComponent(ownerEntity: playerEntity)
         primaryWeapon = world.createEntity()
         world.addComponent(component: primaryWeaponOwner, to: primaryWeapon)
 
@@ -75,12 +75,13 @@ final class PickupSystemTests: XCTestCase {
 
         // --- Near dropped weapon (within pickup range) ---
         nearWeaponTransform = TransformComponent(position: Self.defaultNearWeaponPosition)
-        nearWeaponSprite    = SpriteComponent(content: .texture(name: "handgun"), layer: .weapon)
+        nearWeaponSprite    = SpriteComponent(content: .texture(name: "handgun"), layer: .weaponFront)
         nearWeaponTiming    = WeaponTimingComponent(lastFiredAt: 0, coolDownInterval: nil, attackSpeed: nil)
         nearWeaponRender    = WeaponRenderComponent(
             textureName: "handgun",
             anchorPoint: SIMD2<Float>(0.5, 0.5),
-            initRotation: 0
+            initRotation: 0,
+            offset: SIMD2(10.0, 5.0)
         )
         nearWeaponEffects = WeaponEffectsComponent(effects: [])
 
@@ -93,12 +94,13 @@ final class PickupSystemTests: XCTestCase {
 
         // --- Far dropped weapon (also within pickup range, but farther) ---
         farWeaponTransform = TransformComponent(position: Self.defaultFarWeaponPosition)
-        farWeaponSprite    = SpriteComponent(content: .texture(name: "handgun"), layer: .weapon)
+        farWeaponSprite    = SpriteComponent(content: .texture(name: "handgun"), layer: .weaponFront)
         farWeaponTiming    = WeaponTimingComponent(lastFiredAt: 0, coolDownInterval: nil, attackSpeed: nil)
         farWeaponRender    = WeaponRenderComponent(
             textureName: "handgun",
             anchorPoint: SIMD2<Float>(0.5, 0.5),
-            initRotation: 0
+            initRotation: 0,
+            offset: SIMD2(10.0, 5.0)
         )
         farWeaponEffects = WeaponEffectsComponent(effects: [])
 

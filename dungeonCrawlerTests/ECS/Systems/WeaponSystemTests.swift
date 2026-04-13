@@ -33,14 +33,15 @@ final class WeaponSystemTests: XCTestCase {
     var weaponFacing: FacingComponent!
     var weaponTiming: WeaponTimingComponent!       // coolDown: 0.5       [default]
     var weaponEffects: WeaponEffectsComponent!     // manaCost: 0, damage: 25 [default]
+    var weaponRender: WeaponRenderComponent!       // offset: (10, -5) [default]
 
     // Weapon component variants
     var weaponTransformAt110_45: TransformComponent!  // position: (110, 45) — facing-right from (100,50) + offset (10,-5)
     var weaponTransformAt90_45: TransformComponent!   // position: (90, 45)  — facing-left  from (100,50) + offset (10,-5)
     var weaponTransformAt50_30: TransformComponent!   // position: (50, 30)  — zero-offset from owner at (50,30)
-    var weaponOwnerOffset10_Neg5: OwnerComponent!     // offset: (10, -5)    — explicit for position tests
-    var weaponOwnerOffset10_0: OwnerComponent!        // offset: (10,  0)    — tracks-owner test
-    var weaponOwnerOffsetZero: OwnerComponent!        // offset: (0,   0)    — projectile spawn position test
+    var weaponRenderOffset10_Neg5: WeaponRenderComponent!
+    var weaponRenderOffset10_0: WeaponRenderComponent!
+    var weaponRenderOffsetZero: WeaponRenderComponent!
     var weaponFacingLeft: FacingComponent!
     var weaponTimingLongCooldown: WeaponTimingComponent!  // coolDown: 1.0
 
@@ -98,23 +99,24 @@ final class WeaponSystemTests: XCTestCase {
         // MARK: Weapon defaults
         weaponTransform = TransformComponent(position: Self.defaultOwnerPosition + Self.defaultOffset)
         weaponVelocity  = VelocityComponent()
-        weaponOwner     = OwnerComponent(ownerEntity: ownerEntity, offset: Self.defaultOffset)
+        weaponOwner     = OwnerComponent(ownerEntity: ownerEntity)
         weaponFacing    = FacingComponent(facing: .right)
         weaponTiming    = WeaponTimingComponent(lastFiredAt: 0, coolDownInterval: Self.defaultCoolDownInterval, attackSpeed: 1)
         weaponEffects   = WeaponEffectsComponent(effects: [
             ConsumeManaEffect(amount: 0),
             SpawnProjectileEffect(speed: Self.defaultProjectileSpeed, effectiveRange: Self.defaultProjectileRange, damage: Self.defaultProjectileDamage, spriteName: "normalHandgunBullet", collisionSize: SIMD2<Float>(6, 6))
         ])
+        weaponRender    = WeaponRenderComponent(textureName: "handgun", anchorPoint: SIMD2(0, 0), initRotation: 0, offset: Self.defaultOffset)
 
         // MARK: Weapon transform variants
         weaponTransformAt110_45 = TransformComponent(position: SIMD2(110, 45))
         weaponTransformAt90_45  = TransformComponent(position: SIMD2(90, 45))
         weaponTransformAt50_30  = TransformComponent(position: SIMD2(50, 30))
 
-        // MARK: Weapon owner variants
-        weaponOwnerOffset10_Neg5 = OwnerComponent(ownerEntity: ownerEntity, offset: SIMD2(10, -5))
-        weaponOwnerOffset10_0    = OwnerComponent(ownerEntity: ownerEntity, offset: SIMD2(10,  0))
-        weaponOwnerOffsetZero    = OwnerComponent(ownerEntity: ownerEntity, offset: .zero)
+        
+        weaponRenderOffset10_Neg5 = WeaponRenderComponent(textureName: "handgun", anchorPoint: SIMD2(0, 0), initRotation: 0, offset: SIMD2(10, -5))
+        weaponRenderOffset10_0 = WeaponRenderComponent(textureName: "handgun", anchorPoint: SIMD2(0, 0), initRotation: 0, offset: SIMD2(10, 0))
+        weaponRenderOffsetZero = WeaponRenderComponent(textureName: "handgun", anchorPoint: SIMD2(0, 0), initRotation: 0, offset: .zero)
 
         // MARK: Weapon facing variant
         weaponFacingLeft = FacingComponent(facing: .left)
@@ -153,10 +155,14 @@ final class WeaponSystemTests: XCTestCase {
         ])
 
         // MARK: Mana variants
-        mana10of100  = { var m = ManaComponent(base: 10,  max: 100, regenRate: 0); m.value.current = 10;  return m }()
-        mana20of100  = { var m = ManaComponent(base: 20,  max: 100, regenRate: 0); m.value.current = 20;  return m }()
-        mana50of100  = { var m = ManaComponent(base: 50,  max: 100, regenRate: 0); m.value.current = 50;  return m }()
-        mana100of100 = { var m = ManaComponent(base: 100, max: 100, regenRate: 0); m.value.current = 100; return m }()
+        mana10of100  = { let m = ManaComponent(base: 10,  max: 100, regenRate: 0); m.value.current = 10;  return m }()
+        mana20of100  = { let m = ManaComponent(base: 20,  max: 100, regenRate: 0); m.value.current = 20;  return m }()
+        mana50of100  = {
+            let m = ManaComponent(base: 50,  max: 100, regenRate: 0);
+            m.value.current = 50;
+            return m
+        }()
+        mana100of100 = { let m = ManaComponent(base: 100, max: 100, regenRate: 0); m.value.current = 100; return m }()
 
         weaponEntity = world.createEntity()
         world.addComponent(component: weaponTransform, to: weaponEntity)
@@ -165,6 +171,7 @@ final class WeaponSystemTests: XCTestCase {
         world.addComponent(component: weaponFacing,    to: weaponEntity)
         world.addComponent(component: weaponTiming,    to: weaponEntity)
         world.addComponent(component: weaponEffects,   to: weaponEntity)
+        world.addComponent(component: weaponRender,    to: weaponEntity)
     }
 
     override func tearDown() {
@@ -187,12 +194,13 @@ final class WeaponSystemTests: XCTestCase {
         weaponFacing              = nil
         weaponTiming              = nil
         weaponEffects             = nil
+        weaponRender              = nil
         weaponTransformAt110_45   = nil
         weaponTransformAt90_45    = nil
         weaponTransformAt50_30    = nil
-        weaponOwnerOffset10_Neg5  = nil
-        weaponOwnerOffset10_0     = nil
-        weaponOwnerOffsetZero     = nil
+        weaponRenderOffset10_Neg5  = nil
+        weaponRenderOffset10_0     = nil
+        weaponRenderOffsetZero     = nil
         weaponFacingLeft          = nil
         weaponTimingLongCooldown  = nil
         weaponEffectsManaCost20_Damage25  = nil
@@ -222,7 +230,7 @@ final class WeaponSystemTests: XCTestCase {
     func testWeaponPositionFollowsOwnerFacingRight() {
         world.addComponent(component: ownerTransformAt100_50,   to: ownerEntity)
         world.addComponent(component: weaponTransformAt110_45,  to: weaponEntity)
-        world.addComponent(component: weaponOwnerOffset10_Neg5, to: weaponEntity)
+        world.addComponent(component: weaponRenderOffset10_Neg5, to: weaponEntity)
 
         system.update(deltaTime: 0.1, world: world)
 
@@ -236,13 +244,13 @@ final class WeaponSystemTests: XCTestCase {
         world.addComponent(component: ownerVelocityFacingLeft,  to: ownerEntity)
         world.addComponent(component: ownerFacingLeft,          to: ownerEntity)
         world.addComponent(component: weaponTransformAt90_45,   to: weaponEntity)
-        world.addComponent(component: weaponOwnerOffset10_Neg5, to: weaponEntity)
+        world.addComponent(component: weaponRenderOffset10_Neg5, to: weaponEntity)
         world.addComponent(component: weaponFacingLeft,         to: weaponEntity)
 
         system.update(deltaTime: 0.1, world: world)
 
         let transform = world.getComponent(type: TransformComponent.self, for: weaponEntity)!
-        XCTAssertEqual(transform.position.x, 90, accuracy: 0.01)
+        XCTAssertEqual(transform.position.x, 110, accuracy: 0.01)
         XCTAssertEqual(transform.position.y, 45, accuracy: 0.01)
     }
 
@@ -276,7 +284,7 @@ final class WeaponSystemTests: XCTestCase {
     }
 
     func testWeaponTracksOwnerAfterOwnerMoves() {
-        world.addComponent(component: weaponOwnerOffset10_0, to: weaponEntity)
+        world.addComponent(component: weaponRenderOffset10_0, to: weaponEntity)
 
         system.update(deltaTime: 0.1, world: world)
         world.getComponent(type: TransformComponent.self, for: ownerEntity)?.position = SIMD2(50, 0)
@@ -433,7 +441,7 @@ final class WeaponSystemTests: XCTestCase {
     func testSpawnedProjectileHasTransformAtOwnerPosition() {
         world.addComponent(component: ownerTransformAt50_30,  to: ownerEntity)
         world.addComponent(component: weaponTransformAt50_30, to: weaponEntity)
-        world.addComponent(component: weaponOwnerOffsetZero,  to: weaponEntity)
+        world.addComponent(component: weaponRenderOffsetZero, to: weaponEntity)
 
         system.update(deltaTime: 1.0, world: world)
 

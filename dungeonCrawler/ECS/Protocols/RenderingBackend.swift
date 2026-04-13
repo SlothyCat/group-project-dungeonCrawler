@@ -8,7 +8,8 @@ public protocol RenderingBackend: AnyObject {
         sprite: SpriteComponent,
         facing: FacingComponent?,
         velocity: VelocityComponent?,
-        health: HealthComponent?
+        health: HealthComponent?,
+        hasDirectionalAnimation: Bool
     )
     func removeNode(for entity: Entity)
 }

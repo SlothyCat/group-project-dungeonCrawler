@@ -39,13 +39,16 @@ public final class PickupSystem: System {
                 ) else { continue }
 
                 let ownerFacing = world.getComponent(type: FacingComponent.self, for: player)?.facing ?? .right
-                let weaponOffset = world.getComponent(type: OwnerComponent.self, for: equipped.primaryWeapon)?.offset
-                    ?? defaultWeaponOffset
 
                 world.removeComponent(type: SpriteComponent.self, from: pickedWeapon)
+                if let secondWeapon = equipped.secondaryWeapon {
+                    world.removeComponent(type: OwnerComponent.self, from: secondWeapon)
+                    guard let renderInfo = world.getComponent(type: WeaponRenderComponent.self, for: secondWeapon) else { fatalError("secondWeapon missing WeaponRenderComponent") }
+                    world.addComponent(component: SpriteComponent(textureName: renderInfo.textureName), to: secondWeapon)
+                }
                 equipped.secondaryWeapon = pickedWeapon
                 world.addComponent(
-                    component: OwnerComponent(ownerEntity: player, offset: weaponOffset),
+                    component: OwnerComponent(ownerEntity: player),
                     to: pickedWeapon
                 )
                 world.addComponent(component: FacingComponent(facing: ownerFacing), to: pickedWeapon)
