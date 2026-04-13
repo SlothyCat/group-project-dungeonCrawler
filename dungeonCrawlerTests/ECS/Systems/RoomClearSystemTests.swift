@@ -30,7 +30,7 @@ struct RoomClearSystemTests {
         let world = World()
         orchestrator.loadLevel(1, world: world)
         
-        let system = RoomClearSystem(orchestrator: orchestrator)
+        let system = RoomClearSystem(orchestrator: orchestrator, bossRoomClearedEvent: BossRoomClearedEvent())
         
         // 1. Setup: Get Middle room
         let stateEntity = try #require(world.entities(with: LevelStateComponent.self).first)
@@ -60,7 +60,7 @@ struct RoomClearSystemTests {
         let world = World()
         orchestrator.loadLevel(1, world: world)
         
-        let system = RoomClearSystem(orchestrator: orchestrator)
+        let system = RoomClearSystem(orchestrator: orchestrator, bossRoomClearedEvent: BossRoomClearedEvent())
         
         // 1. Setup: Get Middle room
         let stateEntity = try #require(world.entities(with: LevelStateComponent.self).first)
@@ -88,7 +88,7 @@ struct RoomClearSystemTests {
         let world = World()
         orchestrator.loadLevel(1, world: world)
         
-        let system = RoomClearSystem(orchestrator: orchestrator)
+        let system = RoomClearSystem(orchestrator: orchestrator, bossRoomClearedEvent: BossRoomClearedEvent())
         
         // 1. Setup: Get Middle room
         let stateEntity = try #require(world.entities(with: LevelStateComponent.self).first)
