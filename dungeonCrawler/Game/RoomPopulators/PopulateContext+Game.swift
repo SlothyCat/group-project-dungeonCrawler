@@ -59,6 +59,22 @@ extension PopulateContext {
             )
             occupiedPositions.append(bazookaPos)
         }
+        
+        if let spellBookPos = findEmptySpace() {
+            let spellBookDef = WeaponType.spellBook.baseDefinition
+            let spellBookWeapon = WeaponEntityFactory(base: spellBookDef).make(in: world, initLocation: spellBookPos)
+            world.addComponent(
+                component: SpriteComponent(
+                    content: .texture(name: spellBookDef.textureName),
+                    layer: .weaponFront,
+                    anchorPoint: spellBookDef.anchorPoint ?? SIMD2<Float>(0.5, 0.5)),
+                to: spellBookWeapon)
+            world.addComponent(
+                component: RoomMemberComponent(roomID: roomID),
+                to: spellBookWeapon
+            )
+            occupiedPositions.append(spellBookPos)
+        }
 
         return weapon
     }

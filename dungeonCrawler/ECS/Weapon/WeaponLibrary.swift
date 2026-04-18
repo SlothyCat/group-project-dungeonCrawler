@@ -119,19 +119,19 @@ enum WeaponType: CaseIterable {
 
         case .spellBook:
             WeaponBase(
-                textureName: "spellBook",
+                textureName: "spellbook",
                 offset: SIMD2<Float>(8, -18),
-                scale: WorldConstants.standardEntityScale,
+                scale: 0.55,
                 lastFiredAt: 0,
                 cooldown: TimeInterval(0.5),
                 attackSpeed: 1,
                 effects: [
-                    ConsumeManaEffect(amount: 5),
+                    ConsumeManaEffect(amount: 15),
                     SpawnProjectileEffect(
                         speed: 250,
                         effectiveRange: 500,
                         damage: 30,
-                        spriteName: "magicOrb",          // replace with your actual sprite name
+                        spriteName: "magicOrb",
                         collisionSize: SIMD2<Float>(8, 8),
                         hitEffects: []
                     ),
