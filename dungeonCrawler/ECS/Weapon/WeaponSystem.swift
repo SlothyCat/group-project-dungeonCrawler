@@ -126,9 +126,9 @@ public final class WeaponSystem: System {
                 }
             }
 
-            guard !blocked else { continue }
-
-            timing.lastFiredAt = gameTime
+            if !blocked {
+                timing.lastFiredAt = gameTime
+            }
         }
     }
 
