@@ -276,8 +276,8 @@ final class EntityFactoryTests: XCTestCase {
         XCTAssertTrue(EnemyType.charger.strategy is StandardStrategy)
     }
 
-    func testMummyStrategyIsStandardStrategy() {
-        XCTAssertTrue(EnemyType.mummy.strategy is StandardStrategy)
+    func testMummyStrategyIsTimidStrategy() {
+        XCTAssertTrue(EnemyType.mummy.strategy is TimidStrategy)
     }
 
     func testRangerStrategyIsStandardStrategy() {

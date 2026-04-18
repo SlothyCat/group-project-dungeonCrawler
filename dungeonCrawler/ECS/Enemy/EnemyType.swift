@@ -26,7 +26,7 @@ public struct EnemyType {
         scale: 1.0,
         mass: 10,
         contactDamage: 10.0,
-        strategy: StandardStrategy()
+        strategy: TimidStrategy()
     )
 
     public static let ranger = EnemyType(

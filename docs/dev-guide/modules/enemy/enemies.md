@@ -31,7 +31,7 @@ Enemy types are defined as static constants on `EnemyType` in `ECS/Enemy/EnemyTy
 | Type | Texture | Scale | Mass | Contact Damage | Strategy |
 |---|---|---|---|---|---|
 | `.charger` | "Charger" | 1.0 | 15 | 20.0 | `StandardStrategy()` — chases |
-| `.mummy` | "Mummy" | 1.0 | 10 | 10.0 | `StandardStrategy()` — chases |
+| `.mummy` | "Mummy" | 1.0 | 10 | 10.0 | `TimidStrategy()` — chases, flees below 20% HP |
 | `.ranger` | "Ranger" | 0.75 | 5 | 5.0 | `StandardStrategy` with orbit + shoot attack |
 | `.tower` | "Tower" | 1.5 | 20 | 15.0 | `StandardStrategy` — stationary, shoots on detection |
 
