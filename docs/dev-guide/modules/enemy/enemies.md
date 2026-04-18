@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # Enemies
 
-An enemy is an ECS entity created by `EntityFactory.makeEnemy`. Its behaviour is driven by `EnemyAISystem` in each frame.
+An enemy is an ECS entity created by `EnemyEntityFactory`. Its behaviour is driven by `EnemyAISystem` each frame via a **strategy** that composes one or more **behaviours**.
 
 ## Components
 
@@ -16,25 +16,26 @@ Every enemy entity is created with the following components:
 |---|---|
 | `TransformComponent` | Position, rotation, and scale |
 | `SpriteComponent` | Texture, derived from `EnemyType` at spawn time |
-| `EnemyTagComponent` | Marks the entity as an enemy; holds the resolved `textureName` and `scale` |
-| `VelocityComponent` | Movement vector, set each frame by `EnemyAISystem` |
-| `EnemyStateComponent` | AI mode (wander/chase), detection radii, and strategy instances |
-| `CollisionBoxComponent` | Axis-aligned bounding box, currently sized to `48 × 48 × scale` |
+| `EnemyTagComponent` | Marks the entity as an enemy; holds `textureName` and `scale` |
+| `VelocityComponent` | Movement vector, written each frame by the active behaviour |
+| `EnemyStateComponent` | Holds the enemy's strategy instance |
+| `CollisionBoxComponent` | Axis-aligned bounding box |
+| `RoomMemberComponent` | Binds the enemy to its room (used for bounds-aware wandering and cleanup) |
 
 ## Enemy Types
 
-Enemy types are defined as static constants on the `EnemyType` struct in `ECS/Enemy/EnemyType.swift`. Each constant bundles all properties of that enemy in one place: texture, scale, mass, contact damage, and AI strategies.
+Enemy types are defined as static constants on `EnemyType` in `ECS/Enemy/EnemyType.swift`. Each constant bundles all properties of that enemy: texture, scale, mass, contact damage, and AI strategy.
 
 **Current Enemy Types**:
 
-| Type | Texture | Scale | Mass | Contact Damage | Wander Strategy | Chase Strategy |
-|---|---|---|---|---|---|---|
-| `.charger` | "Charger" | 1.0 | 15 | 20.0 | `WanderStrategy` | `StraightLineChaseStrategy` |
-| `.mummy` | "Mummy" | 1.0 | 10 | 10.0 | `WanderStrategy` | `StraightLineChaseStrategy` |
-| `.ranger` | "Ranger" | 0.75 | 5 | 5.0 | `WanderStrategy` | `ShooterBasicStrategy` |
-| `.tower` | "Tower" | 1.5 | 20 | 15.0 | `StationaryStrategy` | `StationaryStrategy` |
+| Type | Texture | Scale | Mass | Contact Damage | Strategy |
+|---|---|---|---|---|---|
+| `.charger` | "Charger" | 1.0 | 15 | 20.0 | `StandardStrategy()` — chases |
+| `.mummy` | "Mummy" | 1.0 | 10 | 10.0 | `StandardStrategy()` — chases |
+| `.ranger` | "Ranger" | 0.75 | 5 | 5.0 | `StandardStrategy` with orbit + shoot attack |
+| `.tower` | "Tower" | 1.5 | 20 | 15.0 | `StandardStrategy` — stationary, shoots on detection |
 
-The final in-world scale is `baseScale × type.scale`, where `baseScale` is passed in at spawn time (derived from screen size).
+The final in-world scale is `baseScale × type.scale`, where `baseScale` is passed in at spawn time.
 
 ## Spawning an Enemy
 
@@ -59,8 +60,7 @@ public static let goblin = EnemyType(
     scale: 0.85,
     mass: 8,
     contactDamage: 12.0,
-    wanderStrategy: WanderStrategy(),
-    chaseStrategy: StraightLineChaseStrategy()
+    strategy: StandardStrategy()
 )
 ```
 
@@ -68,21 +68,20 @@ Also add the corresponding texture asset to the asset catalog.
 
 All properties are required by the compiler, so a new definition cannot be accidentally left incomplete.
 
-No changes to `EnemyTagComponent` or `EnemyAISystem` are needed. To give the new type different AI behaviour, replace the `EnemyStateComponent` on the entity after creation using `world.addComponent` (which overwrites any existing component of the same type):
+## Customising AI After Spawn
+
+To override a spawned enemy's strategy, replace `EnemyStateComponent` after creation — `addComponent` overwrites any existing component of the same type:
 
 ```swift
-let enemy = EnemyEntityFactory(at: position, type: .goblin, baseScale: scale).make(in: world)
+let enemy = EnemyEntityFactory(at: position, type: .goblin).make(in: world)
 world.addComponent(
     component: EnemyStateComponent(
-        detectionRadius: 200,
-        loseRadius: 300,
-        wanderStrategy: StationaryStrategy(),
-        chaseStrategy: ShooterBasicStrategy(innerRadius: 120, outerRadius: 220)
+        strategy: TimidStrategy(detectionRadius: 200, fleeThreshold: 0.4)
     ),
     to: enemy
 )
 ```
 
-`EnemyStateComponent`'s initializer has defaults for all parameters (`detectionRadius: 150`, `loseRadius: 225`, `wanderStrategy: WanderStrategy()`, `chaseStrategy: StraightLineChaseStrategy()`), so you only need to supply the fields you want to override.
+`EnemyStateComponent` defaults to `StandardStrategy()`, so you only supply what you want to override.
 
-See [Enemy AI System](./enemyAISystem.md) for all available strategies and configurable fields.
+See [Enemy AI System](./enemyAISystem.md) for all available strategies, behaviours, and their configurable parameters.

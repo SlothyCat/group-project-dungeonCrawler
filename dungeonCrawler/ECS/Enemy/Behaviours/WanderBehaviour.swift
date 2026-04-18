@@ -8,9 +8,9 @@
 import Foundation
 import simd
 
-/// Moves the enemy to random points within wanderRadius.
-/// Wander target state is stored in WanderTargetComponent on the entity,
-/// added lazily on first update and removed when this behaviour deactivates.
+/// Moves the enemy to random points within wanderRadius while ensuring within room bounds
+/// Wander target state is stored in WanderTargetComponent on the entity, and added lazily
+/// on first update and removed when this behaviour deactivates.
 public struct WanderBehaviour: EnemyBehaviour {
 
     public var wanderRadius: Float
