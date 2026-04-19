@@ -117,19 +117,6 @@ final class WanderBehaviourTests: XCTestCase {
         XCTAssertNotNil(world.getComponent(type: WanderTargetComponent.self, for: enemy))
     }
 
-    // MARK: - Deactivation cleanup
-    // TODO: fix
-//    func testWanderTargetComponentRemovedOnDeactivate() {
-//        behaviour.update(entity: enemy, context: context)
-//
-//        // Capture reference to prevent deallocation crash during removal
-//        let target = world.getComponent(type: WanderTargetComponent.self, for: enemy)
-//        XCTAssertNotNil(target)
-//
-//        behaviour.onDeactivate(entity: enemy, context: context)
-//        XCTAssertNil(world.getComponent(type: WanderTargetComponent.self, for: enemy))
-//    }
-
     // MARK: - Update behaviour
 
     func testUpdateProducesNonZeroVelocity() {
