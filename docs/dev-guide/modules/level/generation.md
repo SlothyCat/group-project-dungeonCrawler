@@ -63,4 +63,120 @@ The **"Seam"** between the generation framework and specific game content.
 2. **Game Layer**: Implements logic for spawning specific enemies or loot (e.g., `EnemyRoomPopulator`).
 3. **Execution**: `LevelOrchestrator` invokes the populator after the geometry is built.
 
+---
+
+## Generation Pipeline
+
+When a level is loaded, the following pipeline executes in order:
+
+1. **Context Setup** — A `GenerationContext` is created with the current floor index, difficulty multiplier, and a random seed. The seed enables deterministic reproduction of any dungeon for debugging.
+2. **Topology** — `layoutStrategy.generate(context:)` runs and returns a `DungeonGraph` describing which rooms exist and how they connect (pure data, no ECS).
+3. **Geometry** — For each node in the graph, `roomConstructor.construct(...)` creates the wall and floor ECS entities. Corridor edges are similarly built into narrow rooms with matching walls.
+4. **Population** — Each room's assigned `RoomPopulatorStrategy` runs after geometry is built, spawning enemies, weapons, or leaving the room empty.
+5. **State Storage** — The completed graph is stored in `LevelStateComponent` in the ECS World. The starting node is set as `activeNodeID`.
+
+---
+
+## Layout Strategies
+
+Each strategy produces a different dungeon shape by arranging rooms and corridors. All strategies use the `LayoutBuilder` fluent API to place rooms relative to one another. The builder handles world-space offset calculations automatically.
+
+All rooms are currently 1000 × 800 world units. Corridors default to 300 units long.
+
+### `LinearDungeonLayout`
+The simplest strategy. Rooms are chained eastward in a straight line.
+
+```
+[Start/Weapon] ── [Combat] ── [Boss]
+```
+
+- Enemy count scales with floor index and room position.
+- The final room is always the boss room (higher enemy count).
+- Used by **Chilling Crypts**.
+
+### `StarDungeonLayout`
+A hub-and-spokes layout. The start room sits in the centre with four branches extending in each cardinal direction.
+
+```
+        [N combat]
+             |
+[W boss] ── [Start] ── [E combat]
+             |
+        [S combat]
+```
+
+- Three regular combat branches (N, E, S) and one boss branch (W).
+- All branches are the same corridor length from the hub.
+- Used by **Burning Depths**.
+
+### `LShapeDungeonLayout`
+An L-shaped path. The first leg runs east, then turns south at a corner room, and the boss anchors the end of the vertical leg.
+
+```
+[Start] ── [Combat] ── [Corner]
+                           |
+                       [Combat] ── [Boss]
+```
+
+- Introduces a directional turn mid-dungeon.
+- Used by **Living Labyrinth**.
+
+---
+
+## Room Construction
+
+`BoxRoomConstructor` is the concrete implementation of `RoomConstructor`. It fills a room with:
+
+- A **floor entity** spanning the full room bounds.
+- **Perimeter wall segments** around all four sides, with gaps cut out for each doorway.
+
+Wall splitting works by sorting all doorways on a given edge by position, then emitting wall segments between them. The result is a continuous perimeter with clean openings wherever corridors connect.
+
+Corridors are treated as narrow rooms and constructed the same way, with openings at both ends.
+
+---
+
+## Population System
+
+After geometry is built, each room's `RoomPopulatorStrategy` is invoked with a `PopulateContext` that provides helpers for placing entities safely (avoiding walls and already-occupied spots).
+
+| Populator | Behaviour |
+|---|---|
+| `EmptyRoomPopulator` | No-op. Used for the start room on floors beyond the first. |
+| `WeaponRoomPopulator` | Spawns a weapon pickup near the room centre. Used for the start room. |
+| `EnemyRoomPopulator` | Spawns a configurable number of enemies from the layout's `enemyPool`. |
+| `CompositeRoomPopulator` | Combines multiple populators; runs each in sequence. |
+
+Enemy count per room is calculated by the layout strategy based on `floorIndex` (increases with progression) and room position (the boss room always gets more enemies).
+
+---
+
+## Dungeon Definitions
+
+The `DungeonLibrary` is a static registry that maps a dungeon name and visual theme to a concrete layout strategy and enemy pool. Adding a new dungeon means adding one entry here—no other code changes are required.
+
+```swift
+DungeonDefinition(
+    name: "Burning Depths",
+    theme: .burning,
+    layoutStrategy: StarDungeonLayout(enemyPool: [.charger, .mummy, .ranger])
+)
+```
+
+Each `DungeonDefinition` bundles:
+- **`name` / `description`**: Shown in the level-select screen.
+- **`theme`**: Controls the visual tile set used by the tile renderer.
+- **`layoutStrategy`**: The `DungeonLayoutStrategy` instance used at generation time.
+
+---
+
+## Adding a New Layout
+
+1. Create a type conforming to `DungeonLayoutStrategy`.
+2. Use `LayoutBuilder.placeStartRoom(...)` to place the first room, then `addRoom(extending:direction:...)` for each subsequent room.
+3. Assign a `RoomPopulatorStrategy` to each room at placement time.
+4. Call `builder.build()` and return the `DungeonGraph`.
+5. Register a new `DungeonDefinition` in `DungeonLibrary.all`.
+
+No changes to `LevelOrchestrator`, `LevelGenerationManager`, or `BoxRoomConstructor` are needed.
 
