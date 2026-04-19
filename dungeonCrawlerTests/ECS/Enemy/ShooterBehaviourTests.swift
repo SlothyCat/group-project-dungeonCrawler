@@ -65,27 +65,6 @@ final class ShooterBehaviourTests: XCTestCase {
         XCTAssertNotNil(world.getComponent(type: EquippedWeaponComponent.self, for: enemy))
     }
 
-    // MARK: - onDeactivate
-    // TODO: fix
-//
-//    func testDeactivateClearsShooting() {
-//        behaviour.onActivate(entity: enemy, context: context)
-//        world.getComponent(type: InputComponent.self, for: enemy)?.isShooting = true
-//
-//        behaviour.onDeactivate(entity: enemy, context: context)
-//
-//        XCTAssertEqual(
-//            world.getComponent(type: InputComponent.self, for: enemy)?.isShooting,
-//            false
-//        )
-//    }
-//
-//    func testDeactivateRemovesEquippedWeapon() {
-//        behaviour.onActivate(entity: enemy, context: context)
-//        behaviour.onDeactivate(entity: enemy, context: context)
-//        XCTAssertNil(world.getComponent(type: EquippedWeaponComponent.self, for: enemy))
-//    }
-
     // MARK: - Update: aim
 
     func testUpdateSetsAimDirectionTowardPlayer() {

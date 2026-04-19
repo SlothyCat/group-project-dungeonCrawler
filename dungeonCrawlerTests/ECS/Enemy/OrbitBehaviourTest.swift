@@ -87,17 +87,6 @@ final class OrbitBehaviourTests: XCTestCase {
         XCTAssertNotNil(world.getComponent(type: ShooterBasicComponent.self, for: enemy))
     }
 
-    // MARK: - Deactivation Cleanup
-    // TODO: fix
-
-//    func testShooterComponentRemovedOnDeactivate() {
-//        behaviour.update(entity: enemy, context: context)
-//        XCTAssertNotNil(world.getComponent(type: ShooterBasicComponent.self, for: enemy))
-//
-//        behaviour.onDeactivate(entity: enemy, context: context)
-//        XCTAssertNil(world.getComponent(type: ShooterBasicComponent.self, for: enemy))
-//    }
-
     // MARK: - First Update (no target yet)
 
     func testVelocityIsZeroOnFirstUpdate() {
