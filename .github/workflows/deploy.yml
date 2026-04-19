@@ -11,6 +11,7 @@ jobs:
   build:
     name: Build Docusaurus
     runs-on: ubuntu-latest
+    if: github.repository == 'cs3217-2526/group-project-dungeonCrawler'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,6 +37,7 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: build
+    if: github.repository == 'cs3217-2526/group-project-dungeonCrawler'
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
