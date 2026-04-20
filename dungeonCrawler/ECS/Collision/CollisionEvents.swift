@@ -19,13 +19,11 @@ public struct ProjectileHitSolidEvent {
 public struct PlayerHitByEnemyEvent {
     public let player: Entity
     public let enemy: Entity
-    public let damage: Float
 }
 
 public struct ProjectileHitEnemyEvent {
     public let projectile: Entity
     public let enemy: Entity
-    public let damage: Float
 }
  
 // MARK: - Shared event buffer
@@ -49,12 +47,12 @@ public final class CollisionEventBuffer {
         projectileHitSolid.append(ProjectileHitSolidEvent(projectile: projectile, solid: solid))
     }
     
-    public func recordPlayerHitByEnemy(player: Entity, enemy: Entity, damage: Float) {
-        playerHitByEnemy.append(PlayerHitByEnemyEvent(player: player, enemy: enemy, damage: damage))
+    public func recordPlayerHitByEnemy(player: Entity, enemy: Entity) {
+        playerHitByEnemy.append(PlayerHitByEnemyEvent(player: player, enemy: enemy))
     }
-    
-    public func recordProjectileHitEnemy(projectile: Entity, enemy: Entity, damage: Float) {
-        projectileHitEnemy.append(ProjectileHitEnemyEvent(projectile: projectile, enemy: enemy, damage: damage))
+
+    public func recordProjectileHitEnemy(projectile: Entity, enemy: Entity) {
+        projectileHitEnemy.append(ProjectileHitEnemyEvent(projectile: projectile, enemy: enemy))
     }
 }
  

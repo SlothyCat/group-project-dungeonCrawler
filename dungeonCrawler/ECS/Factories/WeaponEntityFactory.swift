@@ -19,7 +19,7 @@ public struct WeaponEntityFactory: EntityFactory {
     /// Carried through from WeaponBase so make() can attach WeaponAmmoComponent.
     let ammoConfig: AmmoConfig?
 
-    public init(base: WeaponBase) {
+    public init(base: WeaponLibraryEnemy) {
         self.textureName = base.textureName
         self.offset = base.offset
         self.scale = base.scale

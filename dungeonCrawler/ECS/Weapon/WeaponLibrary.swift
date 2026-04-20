@@ -17,7 +17,7 @@ enum WeaponType: CaseIterable {
     case spellBook
     case poisonBottle
 
-    var baseDefinition: WeaponBase {
+    var baseDefinition: WeaponLibraryEnemy {
         switch self {
 
         // Firearms:
@@ -25,7 +25,7 @@ enum WeaponType: CaseIterable {
         // ConsumeAmmoEffect gates firing and drives the reload cycle.
 
         case .handgun:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "handgun",
                 offset: SIMD2<Float>(8, -18),
                 scale: WorldConstants.standardEntityScale,
@@ -50,7 +50,7 @@ enum WeaponType: CaseIterable {
             )
 
         case .sniper:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "Sniper",
                 offset: SIMD2<Float>(10, -8),
                 scale: WorldConstants.standardEntityScale,
@@ -77,7 +77,7 @@ enum WeaponType: CaseIterable {
         // No ammo config, no mana cost — just swing cooldown.
 
         case .sword:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "sword",
                 offset: SIMD2<Float>(20, -15),
                 scale: 0.3,
@@ -98,7 +98,7 @@ enum WeaponType: CaseIterable {
             )
 
         case .axe:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "axe",
                 offset: SIMD2<Float>(20, -15),
                 scale: 0.3,
@@ -123,7 +123,7 @@ enum WeaponType: CaseIterable {
         // ConsumeManaEffect gates firing — no ammo component created.
 
         case .spellBook:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "spellbook",
                 offset: SIMD2<Float>(8, -18),
                 scale: 0.55,
@@ -150,7 +150,7 @@ enum WeaponType: CaseIterable {
             )
         
         case .bazooka:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "bazooka",
                 offset: SIMD2<Float>(10, -5),
                 scale: 0.4,
@@ -178,7 +178,7 @@ enum WeaponType: CaseIterable {
                 // ammoConfig intentionally nil — mana-gated only
             )
         case .poisonBottle:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "poisonBottle",
                 offset: SIMD2<Float>(10, -5),
                 scale: 0.6,

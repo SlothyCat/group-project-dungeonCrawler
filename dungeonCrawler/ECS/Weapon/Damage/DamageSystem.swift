@@ -19,32 +19,9 @@ public final class DamageSystem: System {
     }
 
     public func update(deltaTime: Double, world: World) {
-        applyProjectileHits(world: world)
         applyContactDamage(world: world)
     }
-    
-    // MARK: - Projectile → Enemy
-     
-    private func applyProjectileHits(world: World) {
-        // Deduplicate: ensure each projectile only deals damage once per frame
-        // even if it registered multiple overlaps.
-        var processedProjectiles = Set<Entity>()
- 
-        for event in events.projectileHitEnemy {
-            guard world.isAlive(entity: event.projectile),
-                  world.isAlive(entity: event.enemy) else { continue }
- 
-            if !processedProjectiles.contains(event.projectile),
-               let health = world.getComponent(type: HealthComponent.self, for: event.enemy) {
-                health.value.current -= event.damage
-                health.value.clampToMin()
-                processedProjectiles.insert(event.projectile)
-            }
- 
-            destructionQueue.enqueue(event.projectile)
-        }
-    }
- 
+
     // MARK: - Enemy contact → Player
 
     private func applyContactDamage(world: World) {
@@ -54,8 +31,9 @@ public final class DamageSystem: System {
             // Skip if entity is currently in invincibility frames
             guard world.getComponent(type: InvincibilityComponent.self, for: event.player) == nil else { continue }
 
-            if let health = world.getComponent(type: HealthComponent.self, for: event.player) {
-                health.value.current -= event.damage
+            if let contactDamage = world.getComponent(type: ContactDamageComponent.self, for: event.enemy),
+               let health = world.getComponent(type: HealthComponent.self, for: event.player) {
+                health.value.current -= contactDamage.damage
                 health.value.clampToMin()
             }
 
