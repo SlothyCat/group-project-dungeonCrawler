@@ -135,18 +135,6 @@ final class StandardStrategyTests: XCTestCase {
         XCTAssertNotEqual(activeBehaviourID(for: enemy), wanderBehaviour.id)
     }
 
-    // MARK: - Behaviour transition lifecycle
-    // TODO: fix
-//    func testWanderTargetRemovedWhenSwitchingToAttack() {
-//        strategy.update(entity: enemy, context: BehaviourContext(entity: enemy, playerPos: SIMD2(200, 0), transform: transform, world: world))
-//
-//        let wanderTarget = world.getComponent(type: WanderTargetComponent.self, for: enemy)
-//        XCTAssertNotNil(wanderTarget)
-//
-//        strategy.update(entity: enemy, context: BehaviourContext(entity: enemy, playerPos: SIMD2(100, 0), transform: transform, world: world))
-//        XCTAssertNil(world.getComponent(type: WanderTargetComponent.self, for: enemy))
-//    }
-
     // MARK: - With Chase attack behaviour
 
     func testActivatesChaseBehaviourWhenPlayerInRange() {
@@ -181,15 +169,4 @@ final class StandardStrategyTests: XCTestCase {
         XCTAssertNotNil(world.getComponent(type: EquippedWeaponComponent.self, for: enemy))
     }
 
-    // TODO: Fix
-//    func testOrbitAndWeaponRemovedWhenDisengaging() {
-//        let strategyWithLose = StandardStrategy(detectionRadius: 150, loseRadius: 225, attackBehaviour: orbitShooterBehaviour)
-//
-//        strategyWithLose.update(entity: enemy, context: BehaviourContext(entity: enemy, playerPos: SIMD2(100, 0), transform: transform, world: world))
-//        XCTAssertNotNil(world.getComponent(type: ShooterBasicComponent.self, for: enemy))
-//
-//        strategyWithLose.update(entity: enemy, context: BehaviourContext(entity: enemy, playerPos: SIMD2(300, 0), transform: transform, world: world))
-//        XCTAssertNil(world.getComponent(type: ShooterBasicComponent.self, for: enemy))
-//        XCTAssertNil(world.getComponent(type: EquippedWeaponComponent.self, for: enemy))
-//    }
 }

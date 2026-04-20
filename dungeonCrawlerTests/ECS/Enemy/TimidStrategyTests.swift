@@ -147,25 +147,6 @@ final class TimidStrategyTests: XCTestCase {
         XCTAssertEqual(activeBehaviourID(for: enemy), fleeBehaviour.id)
     }
 
-    // MARK: - Behaviour transition lifecycle
-    // todo: fix
-//    func testWanderTargetRemovedWhenSwitchingToFlee() {
-//        health.value.current = 100
-//        // Wander first
-//        strategy.update(entity: enemy, context: BehaviourContext(entity: enemy, playerPos: SIMD2(200, 0), transform: transform, world: world))
-//
-//        // Capture component to prevent SIGABRT during removal
-//        let wanderTarget = world.getComponent(type: WanderTargetComponent.self, for: enemy)
-//        XCTAssertNotNil(wanderTarget)
-//
-//        // HP drops - switch to flee
-//        health.value.current = 10
-//        strategy.update(entity: enemy, context: BehaviourContext(entity: enemy, playerPos: SIMD2(200, 0), transform: transform, world: world))
-//
-//        XCTAssertEqual(activeBehaviourID(for: enemy), fleeBehaviour.id)
-//        XCTAssertNil(world.getComponent(type: WanderTargetComponent.self, for: enemy))
-//    }
-
     // MARK: - Hysteresis
 
     func testHysteresisStillAppliesForAttackWhileHealthy() {
