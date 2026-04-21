@@ -35,7 +35,7 @@ Check out our project at **STEPS 28TH**!
 
 If you're a player looking to dive into the dungeon, check out the **[User Manual](./game-manual/overview.md)**.
 
-If you're a developer interested in the architecture, start with the **[Design Overview](./dev-guide/overview.html)** or dive into the **[ECS Core](./dev-guide/ecs/ecs.md)**.
+If you're a developer interested in the architecture, start with the **[Design Overview](./dev-guide/overview.md)** or dive into the **[ECS Core](./dev-guide/ecs/ecs.md)**.
 
 ---
 
