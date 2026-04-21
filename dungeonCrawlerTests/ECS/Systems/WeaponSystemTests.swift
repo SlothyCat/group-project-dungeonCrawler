@@ -2,8 +2,8 @@
 //  WeaponAmmoSystemTests.swift
 //  dungeonCrawlerTests
 //
-//  Tests for ConsumeAmmoEffect, WeaponAmmoComponent, and the WeaponSystem
-//  reload tick. Mirrors the style and setUp/tearDown pattern of WeaponSystemTests.
+//  Tests for ConsumeAmmoEffect, WeaponAmmoComponent, and the WeaponEffectSystem
+//  reload tick. Mirrors the style and setUp/tearDown pattern of WeaponEffectSystem.
 //
 
 import Foundation
@@ -15,7 +15,7 @@ import simd
 final class WeaponAmmoSystemTests: XCTestCase {
 
     var world:  World!
-    var system: WeaponSystem!
+    var system: WeaponEffectSystem!
 
     // MARK: - Owner
 
@@ -66,7 +66,7 @@ final class WeaponAmmoSystemTests: XCTestCase {
     override func setUp() {
         super.setUp()
         world  = World()
-        system = WeaponSystem()
+        system = WeaponEffectSystem()
 
         // Owner
         ownerTransform      = TransformComponent(position: .zero)

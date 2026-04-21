@@ -143,7 +143,7 @@ class GameScene: SKScene {
         systemManager.register(CollisionSystem(events: collisionEvents, destructionQueue: destructionQueue))
         systemManager.register(DamageSystem(events: collisionEvents, destructionQueue: destructionQueue))
         systemManager.register(InvincibilitySystem())
-        systemManager.register(WeaponSystem())
+        systemManager.register(WeaponEffectSystem())
         systemManager.register(WeaponAnimationSystem())
         systemManager.register(KnockbackSystem())
         systemManager.register(CameraSystem())

@@ -53,98 +53,71 @@ public final class BoxRoomConstructor: RoomConstructor {
     ) {
         let t = WorldConstants.wallThickness
 
-        createHorizontalWall(
-            y: bounds.minY + t / 2,
-            bounds: bounds, facing: .south, doorways: doorways,
+        createWall(
+            at: bounds.minY + t / 2,
+            from: bounds.minX + t, to: bounds.maxX - t,
+            axis: .horizontal,
+            openings: doorways.filter { $0.direction == .south },
             builder: builder
         )
-        createHorizontalWall(
-            y: bounds.maxY - t / 2 - WorldConstants.topWallCollisionInset,
-            bounds: bounds, facing: .north, doorways: doorways,
+        createWall(
+            at: bounds.maxY - t / 2 - WorldConstants.topWallCollisionInset,
+            from: bounds.minX + t, to: bounds.maxX - t,
+            axis: .horizontal,
+            openings: doorways.filter { $0.direction == .north },
             builder: builder
         )
-        createVerticalWall(
-            x: bounds.minX + t / 2,
-            bounds: bounds, facing: .west, doorways: doorways,
+        createWall(
+            at: bounds.minX + t / 2,
+            from: bounds.minY, to: bounds.maxY,
+            axis: .vertical,
+            openings: doorways.filter { $0.direction == .west },
             builder: builder
         )
-        createVerticalWall(
-            x: bounds.maxX - t / 2,
-            bounds: bounds, facing: .east, doorways: doorways,
+        createWall(
+            at: bounds.maxX - t / 2,
+            from: bounds.minY, to: bounds.maxY,
+            axis: .vertical,
+            openings: doorways.filter { $0.direction == .east },
             builder: builder
         )
     }
 
-    private func createHorizontalWall(
-        y: Float,
-        bounds: RoomBounds,
-        facing: Direction,
-        doorways: [Doorway],
+    private func createWall(
+        at fixedCoord: Float,
+        from rangeStart: Float,
+        to rangeEnd: Float,
+        axis: CorridorAxis,
+        openings: [Doorway],
         builder: RoomBuilder
     ) {
         let t = WorldConstants.wallThickness
-        let openings = doorways.filter { $0.direction == facing }
-        let xStart = bounds.minX + t
-        let xEnd   = bounds.maxX   - t
+
+        let gapCoord:    (Doorway) -> Float       = axis == .horizontal ? { $0.position.x }              : { $0.position.y }
+        let makePosition: (Float)  -> SIMD2<Float> = axis == .horizontal ? { SIMD2($0, fixedCoord) }       : { SIMD2(fixedCoord, $0) }
+        let makeSize:     (Float)  -> SIMD2<Float> = axis == .horizontal ? { SIMD2($0, t) }                : { SIMD2(t, $0) }
 
         if openings.isEmpty {
-            let w = xEnd - xStart
-            builder.addWall(at: SIMD2((xStart + xEnd) / 2, y), size: SIMD2(w, t))
+            let span = rangeEnd - rangeStart
+            builder.addWall(at: makePosition(rangeStart + span / 2), size: makeSize(span))
             return
         }
 
-        let sorted = openings.sorted { $0.position.x < $1.position.x }
-        var cursor = xStart
+        let sorted = openings.sorted { gapCoord($0) < gapCoord($1) }
+        var cursor = rangeStart
 
         for opening in sorted {
-            let half = opening.width / 2
-            let gapFrom = opening.position.x - half
-            let gapTo   = opening.position.x + half
+            let gapFrom = gapCoord(opening) - opening.width / 2
+            let gapTo   = gapCoord(opening) + opening.width / 2
             if gapFrom > cursor {
-                let w = gapFrom - cursor
-                builder.addWall(at: SIMD2(cursor + w / 2, y), size: SIMD2(w, t))
+                let span = gapFrom - cursor
+                builder.addWall(at: makePosition(cursor + span / 2), size: makeSize(span))
             }
             cursor = gapTo
         }
-        if cursor < xEnd {
-            let w = xEnd - cursor
-            builder.addWall(at: SIMD2(cursor + w / 2, y), size: SIMD2(w, t))
-        }
-    }
-
-    private func createVerticalWall(
-        x: Float,
-        bounds: RoomBounds,
-        facing: Direction,
-        doorways: [Doorway],
-        builder: RoomBuilder
-    ) {
-        let t = WorldConstants.wallThickness
-        let openings = doorways.filter { $0.direction == facing }
-        let yStart = bounds.minY
-        let yEnd   = bounds.maxY
-
-        if openings.isEmpty {
-            let h = yEnd - yStart
-            builder.addWall(at: SIMD2(x, (yStart + yEnd) / 2), size: SIMD2(t, h))
-            return
-        }
-
-        let sorted = openings.sorted { $0.position.y < $1.position.y }
-        var cursor = yStart
-        for opening in sorted {
-            let half = opening.width / 2
-            let gapFrom = opening.position.y - half
-            let gapTo   = opening.position.y + half
-            if gapFrom > cursor {
-                let h = gapFrom - cursor
-                builder.addWall(at: SIMD2(x, cursor + h / 2), size: SIMD2(t, h))
-            }
-            cursor = gapTo
-        }
-        if cursor < yEnd {
-            let h = yEnd - cursor
-            builder.addWall(at: SIMD2(x, cursor + h / 2), size: SIMD2(t, h))
+        if cursor < rangeEnd {
+            let span = rangeEnd - cursor
+            builder.addWall(at: makePosition(cursor + span / 2), size: makeSize(span))
         }
     }
 
