@@ -10,7 +10,7 @@ import simd
 
 /// Every frame, poses each primary weapon relative to its owner: position,
 /// rotation, facing, and sprite layer. Fire direction resolution lives in
-/// `WeaponAimResolver` so `WeaponSystem` can reuse the same rule when firing.
+/// `WeaponAimResolver` so `WeaponEffectSystem` can reuse the same rule when firing.
 public final class WeaponAnimationSystem: System {
     public var dependencies: [System.Type] { [InputSystem.self] }
 

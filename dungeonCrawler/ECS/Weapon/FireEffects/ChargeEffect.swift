@@ -4,7 +4,7 @@ import Foundation
 /// elapsed accumulates; once it reaches `required`, the effect passes through
 /// and downstream effects (e.g. MeleeDamageEffect) run. Charge resets after
 /// a successful fire and whenever the owner releases the fire input
-/// (handled by WeaponSystem).
+/// (handled by WeaponEffectSystem).
 struct ChargeEffect: WeaponEffect {
     let required: Float
 

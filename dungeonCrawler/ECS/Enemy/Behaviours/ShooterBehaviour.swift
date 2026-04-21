@@ -10,7 +10,7 @@ import simd
 ///
 /// Each frame: aims at the player, writes aimDirection + isShooting into the
 /// enemy's InputComponent, and updates FacingComponent so the weapon sprite
-/// mirrors correctly. Actual firing is gated by WeaponSystem — this behaviour
+/// mirrors correctly. Actual firing is gated by WeaponEffectSystem — this behaviour
 /// only signals intent.
 ///
 /// onActivate  — spawns weapon entity, equips it, adds InputComponent +
@@ -31,7 +31,7 @@ public struct ShooterBehaviour: EnemyBehaviour {
     // MARK: - Lifecycle
 
     public func onActivate(entity: Entity, context: BehaviourContext) {
-        // Ensure FacingComponent exists before spawning weapon — WeaponSystem reads it
+        // Ensure FacingComponent exists before spawning weapon — WeaponEffectSystem reads it
         if context.world.getComponent(type: FacingComponent.self, for: entity) == nil {
             context.world.addComponent(component: FacingComponent(facing: .right), to: entity)
         }
@@ -44,7 +44,7 @@ public struct ShooterBehaviour: EnemyBehaviour {
         // Spawn weapon and link to this enemy as owner
         let weapon = WeaponEntityFactory(base: weaponBase).make(in: context.world, owner: entity)
 
-        // Equip the weapon — WeaponSystem checks EquippedWeaponComponent to decide which weapon fires
+        // Equip the weapon — WeaponEffectSystem checks EquippedWeaponComponent to decide which weapon fires
         if let equipped = context.world.getComponent(type: EquippedWeaponComponent.self, for: entity) {
             equipped.primaryWeapon = weapon
         } else {
@@ -61,7 +61,7 @@ public struct ShooterBehaviour: EnemyBehaviour {
             context.world.removeComponent(type: EquippedWeaponComponent.self, from: entity)
         }
 
-        // Clear shoot intent so WeaponSystem doesn't fire on a stale InputComponent
+        // Clear shoot intent so WeaponEffectSystem doesn't fire on a stale InputComponent
         context.world.getComponent(type: InputComponent.self, for: entity)?.isShooting = false
     }
 

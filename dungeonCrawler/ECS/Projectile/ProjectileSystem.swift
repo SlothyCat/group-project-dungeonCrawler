@@ -2,7 +2,7 @@ import Foundation
 import simd
 
 public final class ProjectileSystem: System {
-    public var dependencies: [System.Type] { [WeaponSystem.self] }
+    public var dependencies: [System.Type] { [WeaponEffectSystem.self] }
     
     private let events: CollisionEventBuffer
     private let destructionQueue: DestructionQueue
