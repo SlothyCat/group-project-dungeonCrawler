@@ -10,7 +10,7 @@ import simd
 
 public final class MovementSystem: System {
 
-    public var dependencies: [System.Type] { [InputSystem.self, EnemyAISystem.self, KnockbackSystem.self] }
+    public var dependencies: [System.Type] { [InputSystem.self, EnemyAISystem.self, KnockbackSystem.self, SlowSystem.self] }
 
     public init() {}
 

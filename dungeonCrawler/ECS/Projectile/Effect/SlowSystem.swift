@@ -7,19 +7,26 @@
 
 import Foundation
 
-/// Ticks SlowComponent timers each frame.
-/// While SlowComponent is present, VelocityComponent.linear is scaled by the
-/// multiplier inside EnemyAISystem (or wherever velocity is written) — this system
-/// only manages lifetime and removal.
+/// Runs after EnemyAISystem (behaviours write full-speed velocity) and before
+/// MovementSystem (integrates velocity into position).
+/// Scales VelocityComponent.linear by the slow multiplier so behaviours never
+/// need to know about SlowComponent. Also manages tint and timer expiry.
 public final class SlowSystem: System {
-    public var dependencies: [System.Type] { [] }
- 
+    public var dependencies: [System.Type] { [EnemyAISystem.self] }
+
     public init() {}
- 
+
     public func update(deltaTime: Double, world: World) {
         let dt = Float(deltaTime)
         for entity in world.entities(with: SlowComponent.self) {
             guard let slow = world.getComponent(type: SlowComponent.self, for: entity) else { continue }
+
+            // Scale the velocity that EnemyAISystem just wrote this frame
+            if let velocity = world.getComponent(type: VelocityComponent.self, for: entity) {
+                velocity.linear *= slow.multiplier
+            }
+
+
             slow.remaining -= dt
             if slow.remaining <= 0 {
                 world.removeComponent(type: SlowComponent.self, from: entity)
@@ -27,4 +34,3 @@ public final class SlowSystem: System {
         }
     }
 }
- 
