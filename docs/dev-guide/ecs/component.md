@@ -13,78 +13,80 @@ A component is a **plain data container**: a Swift `class` that holds state but 
 public protocol Component {}
 ```
 
-Components are attached to entities and stored centrally in `ComponentStorage`. Systems query for entities that have specific components and process them each frame. Because components are now **reference types (classes)**, you can mutate their data directly without needing to re-assign them to the world.
+## Representation Invariants
 
-Keep components as **pure data**, with no methods that encapsulate logic—logic belongs in systems.
+To maintain world consistency, components must adhere to the following rules:
+- **Reference Semantics**: A component retrieved via `getComponent` is a live reference—mutations are immediately visible to all systems.
+- **Unique Ownership**: Each component instance should be owned by **exactly one** entity. Sharing a component instance between two entities (e.g., two enemies sharing one `TransformComponent`) is a misuse of the API and will lead to undefined behavior.
+- **Pure Data**: Components should not contain methods that encapsulate logic or side effects. Logic belongs in **Systems**.
+
+---
+
+## Core Data Types: StatValue
+
+Many components (Health, Mana, MoveSpeed) use the `StatValue` struct to manage numerical data. This structure is designed to support baseline values and temporary modifiers without losing the original state.
+
+| Field | Purpose |
+| :--- | :--- |
+| **`base`** | The unmodified starting value. Never changed by temporary gameplay effects; serves as a reference for percentage-based modifiers. |
+| **`current`** | The active runtime value. Modified by damage, healing, or status effects. |
+| **`max`** | An optional ceiling. If non-nil, `current` is clamped to this value. |
+
+**Invariants:**
+- `current` never exceeds `max` if `max` is non-nil (after calling `clampToMax()`).
+- `current` never falls below a specified floor (usually `0`) after calling `clampToMin()`.
 
 ---
 
 ## Component Storage
 
-Under the hood, components are stored in two layers:
+`ComponentStorage` acts as a 2D mapping between `EntityID` and `ComponentType`.
 
-- **`ComponentStore<T>`** — a per-type dictionary `[EntityID: T]` that holds all components of a single type.
-- **`ComponentStorage`** — a type-erased registry that maps `ObjectIdentifier(T.self)` to its `ComponentStore<T>`.
+- **`ComponentStore<T>`**: A dictionary mapping `EntityID` to `T`.
+- **`ComponentStorage Registry`**: A map from `ObjectIdentifier(T.self)` to the corresponding `ComponentStore<T>`.
 
-These are generally never interacted with directly. Use the `World` API instead.
+This layout ensures **O(1) lookup** for any component type and allows systems to efficiently query all entities possessing a specific set of data.
 
 ---
 
-## Working with Components via World
+## Working with Components
 
-### Add a component
-
+### Add a Component
 ```swift
 world.addComponent(component: TransformComponent(position: .zero), to: entity)
 ```
 
-### Read and Mutate a component
-
-Since components are classes, you can retrieve a reference and modify its properties directly. These changes are immediately reflected in the ECS world.
-
+### Read and Mutate
+Since components are classes, you mutate them directly on the reference:
 ```swift
-if let transform = world.getComponent(type: TransformComponent.self, for: entity) {
-    // Reading
-    print(transform.position)
-
-    // Mutating directly on the reference
-    transform.position += SIMD2<Float>(10, 0)
+if let health = world.getComponent(type: HealthComponent.self, for: entity) {
+    health.value.current -= 10
+    health.value.clampToMin() // StatValue helper
 }
 ```
 
-### Remove a component
-
+### Remove a Component
 ```swift
 world.removeComponent(type: VelocityComponent.self, from: entity)
 ```
 
-### Query all entities with a component
+---
 
-```swift
-let movingEntities = world.entities(with: VelocityComponent.self)
-```
+## Common Component Domains
 
-### Query entities with two components (binary join)
+### Physics & Input
+- **`TransformComponent`**: Position, rotation, and scale.
+- **`VelocityComponent`**: Linear and angular velocity vectors.
+- **`MoveSpeedComponent`**: A `StatValue` wrapper around movement speed.
+- **`InputComponent`**: Stores move/aim vectors and shooting intent.
 
-Returns a tuple array `[(entity, a, b)]` — only entities with **both** components are included:
+### Combat & Stats
+- **`HealthComponent`**: Uses `StatValue` to track HP. 
+- **`ManaComponent`**: Uses `StatValue` to track mana and regeneration rates.
+- **`KnockbackComponent`**: A **transient** component added during knockback. Its presence serves as a state flag for movement systems.
 
-```swift
-let renderables = world.entities(with: TransformComponent.self, and: SpriteComponent.self)
-for (entity, transform, sprite) in renderables {
-    // ...
-}
-```
-
-## Weapons
-
-- `WeaponComponent` — the weapon type, mana cost, attack speed, cooldown interval, and tracks when it was last fired.
-- `OwnerComponent` — links the weapon to the entity (for example, the player) that currently owns or has equipped it.
-- `TransformComponent` — determines where the weapon is in the world (position and rotation) so it can spawn projectiles correctly.
-- `SpriteComponent` — provides rendering data so the weapon can be drawn by the rendering system.
-
-## Projectiles
-
-Projectiles are entities that are spawned by the weapon if the weapon is fired.
-
-Note that projectiles are NOT a special weapon but are entities that are spawned by the weapon if the weapon is fired.
+### Weapons & Projectiles
+- **`EquippedWeaponComponent`**: Stores references to primary and secondary weapon entities.
+- **`WeaponAmmoComponent`**: Tracks magazine count and reload timers.
+- **`ProjectileComponent`**: Stores the array of `ProjectileHitEffect` to apply on impact.
 

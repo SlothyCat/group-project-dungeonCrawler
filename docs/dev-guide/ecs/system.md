@@ -7,7 +7,7 @@ sidebar_position: 3
 
 # Systems
 
-A system contains the **game logic**. Each frame, `SystemManager` calls every registered system in dependency order. Systems read and write component data via `World`, and do not talk to each other directly.
+A system contains the **game logic**. Each frame, the `SystemManager` calls every registered system in dependency order. Systems communicate solely through changes in component data via the `World` instance.
 
 ---
 
@@ -15,7 +15,6 @@ A system contains the **game logic**. Each frame, `SystemManager` calls every re
 
 ```swift
 public protocol System: AnyObject {
-
     /// Systems that must finish before this system runs each update.
     var dependencies: [System.Type] { get }
 
@@ -24,141 +23,78 @@ public protocol System: AnyObject {
 }
 ```
 
-Systems are reference types (`AnyObject`) so they can hold internal state (e.g. node registries, weak references to external objects).
-
-The `dependencies` property has a default implementation that returns `[]`, so systems with no prerequisites don't need to override it.
+Systems are reference types (`AnyObject`), which allows them to hold internal state, such as node registries or weak references to external objects (factories, buffers, etc.).
 
 ---
 
-## Declaring Dependencies
+## Dependency Management (DAG)
 
-Instead of assigning a manual priority number, a system declares which other systems must run before it:
+Instead of manual priority numbers, systems declare their prerequisites. The `SystemManager` builds a **Directed Acyclic Graph (DAG)** and uses **Kahn’s Algorithm** to produce a valid execution order.
 
-```swift
-final class MovementSystem: System {
-    // No dependencies — runs as early as possible
-    func update(deltaTime: Double, world: World) { ... }
-}
-
-final class CollisionSystem: System {
-    // Must run after positions are updated
-    var dependencies: [System.Type] { [MovementSystem.self] }
-
-    func update(deltaTime: Double, world: World) { ... }
-}
-
-final class CombatSystem: System {
-    // Must run after collisions are resolved
-    var dependencies: [System.Type] { [CollisionSystem.self] }
-
-    func update(deltaTime: Double, world: World) { ... }
-}
-```
-
-Only declare **direct** prerequisites. Transitive ordering is inferred automatically — you don't need to list every upstream system.
-
----
-
-## SystemManager
-
-`SystemManager` owns all active systems. On every `update` call it calls each system's `update` in the previously sorted order.
-
-The sorted order is (re)computed lazily: `register` and `unregister` set a dirty flag, and the next `update` call rebuilds the order by:
-
-1. Building a **directed acyclic graph (DAG)** from each system's `dependencies`.
-2. Running a **topological sort** (Kahn's algorithm) to produce a valid execution order.
-
-Frames where no system is added or removed pay no sorting cost.
-
-```swift
-let systemManager = SystemManager()
-
-// Register systems — order of registration doesn't matter
-systemManager.register(CombatSystem())
-systemManager.register(MovementSystem())
-systemManager.register(CollisionSystem())
-
-// Unregister by type
-systemManager.unregister(CombatSystem.self)
-
-// Drive everything — called once per frame
-systemManager.update(deltaTime: deltaTime, world: world)
-```
-
-### Cycle Detection
-
-If a circular dependency is introduced (e.g. `A → B → A`), `SystemManager` fires an `assert` at the point the cycle is detected. Asserts are stripped in release builds — cycles are considered a programmer error caught during development.
+### Why use a DAG?
+- **Extensibility**: Adding a new system only requires knowing its direct prerequisites, not the global state of the entire pipeline.
+- **Safety**: Cycle detection at startup prevents infinite loops or race conditions where two systems depend on each other.
 
 ---
 
 ## Writing a New System
 
-1. Create a `final class` conforming to `System`.
-2. Override `dependencies` if this system must run after others.
-3. Implement `update(deltaTime:world:)`.
-4. Register it with `SystemManager`.
+1.  Create a `final class` conforming to `System`.
+2.  Override `dependencies` to declare prerequisites.
+3.  Implement `update(deltaTime:world:)`.
+4.  Register it with `SystemManager`.
+
+### Code Example: Class-based Mutation
+Since components are classes, you mutate them **by reference**. No write-back to the world is necessary.
 
 ```swift
-final class MySystem: System {
-    var dependencies: [System.Type] { [MovementSystem.self] }
+final class PoisonSystem: System {
+    // Must run after damage is processed but before rendering
+    var dependencies: [System.Type] { [DamageSystem.self] }
 
     func update(deltaTime: Double, world: World) {
-        let entities = world.getEntities(with: [MyComponent.self])
-        for entity in entities {
-            guard var comp = world.getComponent(type: MyComponent.self, for: entity) else { continue }
-            // mutate comp...
-            world.addComponent(component: comp, to: entity)
+        for entity in world.entities(with: PoisonComponent.self) {
+            guard let health = world.getComponent(type: HealthComponent.self, for: entity) else { continue }
+            
+            // Mutate directly on the reference
+            health.value.current -= 0.1 * Float(deltaTime)
+            health.value.clampToMin()
         }
     }
 }
 ```
 
-> **Tip:** Only declare direct prerequisites. If `MySystem` depends on `CollisionSystem`, and `CollisionSystem` already depends on `MovementSystem`, you don't need to list `MovementSystem` in `MySystem.dependencies`.
+---
+
+## Execution Phases
+
+Systems are conceptually grouped into several distinct phases within the global pipeline:
+
+### 1. Input & AI Phase
+The **InputSystem** processes buffered user commands, while the **EnemyAISystem** computes pathfinding and intent (move/aim vectors).
+
+### 2. Physics Phase
+The **KnockbackSystem** and **MovementSystem** integrate calculated velocities into world positions. The **ProjectileSystem** specifically handles the specialized physics of non-kinematic projectiles.
+
+### 3. Combat Phase
+The **WeaponSystem** ticks cooldowns and handles the sequential execution of **Weapon Effects**. The **DamageSystem** processes hit events generated by the **CollisionSystem** to apply health deductions.
+
+### 4. World & Orchestration Phase
+The **LevelRoomTransitionSystem** and **RoomClearSystem** interact with the **LevelOrchestrator** to handle room transitions, locks, and progression logic.
+
+### 5. Output & Rendering Phase
+The **CameraSystem** updates the viewport based on the focus target. Finally, the **RenderSystem** and **HUDSystem** pass final data to the backend protocols.
 
 ---
 
-## System Reference
+## Decoupling from SpriteKit
 
-All currently registered systems, their responsibilities, and their direct dependencies.
+To ensure the game is independently testable, output systems do not depend on SpriteKit types directly. They communicate via **Protocols** declared in `ECS/Protocols/`.
 
-| System | Responsibility | Dependencies |
-|---|---|---|
-| `InputSystem` | Drains `CommandQueues` and writes intent (move direction, facing, etc.) into `InputComponent` | _(none)_ |
-| `LevelTransitionSystem` | Detects when the player crosses a room boundary and triggers a transition via `LevelOrchestrator` | _(none)_ |
-| `KnockbackSystem` | Applies active `KnockbackComponent` velocity to `TransformComponent` each tick | `LevelTransitionSystem` |
-| `EnemyAISystem` | Runs each enemy's AI strategy to compute its desired velocity / facing | `KnockbackSystem` |
-| `HealthSystem` | Processes pending damage / healing on `HealthComponent`; handles death | `EnemyAISystem` |
-| `MovementSystem` | Integrates velocity from `VelocityComponent` into `TransformComponent` for all entities | `InputSystem`, `EnemyAISystem`, `KnockbackSystem` |
-| `CollisionSystem` | Detects and resolves collisions; writes to `CollisionEventBuffer` and `DestructionQueue` | `MovementSystem`, `HealthSystem` |
-| `WeaponSystem` | Ticks weapon cooldowns and spawns projectile entities on fire | `CollisionSystem` |
-| `ProjectileSystem` | Moves active projectiles; reads `CollisionEventBuffer` to apply hit effects and queue destruction | `WeaponSystem` |
-| `CameraSystem` | Lerps the `ViewportComponent` toward the entity tagged with `CameraFocusComponent` | `MovementSystem` |
-| `HUDSystem` | Pushes player health / mana values to the HUD backend; processes joystick render commands | `HealthSystem` |
-| `RenderSystem` | Draws all visible entities via `RenderingBackend` | `CameraSystem`, `HUDSystem`, `ProjectileSystem` |
-| `ManaSystem ` | Ticks mana regeneration on `ManaComponent` | _(none)_ |
+| System | Protocol Dependency | Purpose |
+| :--- | :--- | :--- |
+| **`RenderSystem`** | `RenderingBackend` | Syncing sprite and transform data to nodes. |
+| **`HUDSystem`** | `HUDBackend` | Updating UI health, mana, and ammo bars. |
+| **`CameraSystem`** | `CameraBackend` | Managing the visual viewport and smoothing. |
 
-
-### Dependency Graph
-
-```
-InputSystem          LevelTransitionSystem
-     │                       │
-     │               KnockbackSystem
-     │                  │       │
-     │             EnemyAISystem │
-     │              │    │       │
-     └──────────────┘    │       │
-                         │       │
-              HealthSystem    MovementSystem
-                    │           │        │
-                    └─────┬─────┘        │
-                          │              │
-                    CollisionSystem   CameraSystem
-                          │
-                     WeaponSystem
-                          │
-                   ProjectileSystem    HUDSystem
-                          └──────┬──────┘
-                                 │
-                           RenderSystem
-```
+Concrete **Adapters** (e.g., `SpriteKitRenderingAdapter`) are injected into these systems at startup. This allows unit tests to inject **Mocks** instead of real rendering nodes.
