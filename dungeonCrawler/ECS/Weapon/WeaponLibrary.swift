@@ -17,7 +17,7 @@ enum WeaponType: CaseIterable {
     case spellBook
     case poisonBottle
 
-    var baseDefinition: WeaponBase {
+    var baseDefinition: WeaponLibraryEnemy {
         switch self {
 
         // Firearms:
@@ -25,7 +25,7 @@ enum WeaponType: CaseIterable {
         // ConsumeAmmoEffect gates firing and drives the reload cycle.
 
         case .handgun:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "handgun",
                 offset: SIMD2<Float>(8, -18),
                 scale: WorldConstants.standardEntityScale,
@@ -37,10 +37,11 @@ enum WeaponType: CaseIterable {
                     SpawnLinearProjectileEffect(
                         speed: 300,
                         effectiveRange: 400,
-                        damage: 15,
                         spriteName: "normalHandgunBullet",
                         collisionSize: SIMD2<Float>(6, 6),
-                        hitEffects: []
+                        hitEffects: [
+                            DamageEffect(amount: 15)
+                        ]
                     ),
                 ],
                 anchorPoint: nil,
@@ -49,7 +50,7 @@ enum WeaponType: CaseIterable {
             )
 
         case .sniper:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "Sniper",
                 offset: SIMD2<Float>(10, -8),
                 scale: WorldConstants.standardEntityScale,
@@ -60,9 +61,11 @@ enum WeaponType: CaseIterable {
                     ConsumeAmmoEffect(),
                     SpawnLinearProjectileEffect(
                         speed: 400, effectiveRange: 800,
-                        damage: 50, spriteName: "normalHandgunBullet",
+                        spriteName: "normalHandgunBullet",
                         collisionSize: SIMD2<Float>(6, 6),
-                        hitEffects: []
+                        hitEffects: [
+                            DamageEffect(amount: 50)
+                        ]
                     ),
                 ],
                 anchorPoint: nil,
@@ -74,7 +77,7 @@ enum WeaponType: CaseIterable {
         // No ammo config, no mana cost — just swing cooldown.
 
         case .sword:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "sword",
                 offset: SIMD2<Float>(20, -15),
                 scale: 0.3,
@@ -95,7 +98,7 @@ enum WeaponType: CaseIterable {
             )
 
         case .axe:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "axe",
                 offset: SIMD2<Float>(20, -15),
                 scale: 0.3,
@@ -120,7 +123,7 @@ enum WeaponType: CaseIterable {
         // ConsumeManaEffect gates firing — no ammo component created.
 
         case .spellBook:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "spellbook",
                 offset: SIMD2<Float>(8, -18),
                 scale: 0.55,
@@ -132,12 +135,13 @@ enum WeaponType: CaseIterable {
                     SpawnLinearProjectileEffect(
                         speed: 250,
                         effectiveRange: 500,
-                        damage: 30,
                         spriteName: "magicOrb",
                         collisionSize: SIMD2<Float>(8, 8),
                         hitEffects: [
+                            DamageEffect(amount: 30),
                             SlowEffect(multiplier: 0.4, duration: 2.0),
-                            TintEffect(duration: 2.0, newTint: TintLibrary.slowTint.tint)]
+                            TintEffect(duration: 2.0, newTint: TintLibrary.slowTint.tint)
+                        ]
                     ),
                 ],
                 anchorPoint: nil,
@@ -146,7 +150,7 @@ enum WeaponType: CaseIterable {
             )
         
         case .bazooka:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "bazooka",
                 offset: SIMD2<Float>(10, -5),
                 scale: 0.4,
@@ -157,12 +161,14 @@ enum WeaponType: CaseIterable {
                     CheckEnoughAmmoEffect(),
                     SpawnParabolaProjectileEffect(
                         speed: 300,
-                        damage: 80,
                         spriteName: "rocket",
                         collisionSize: SIMD2<Float>(10, 10),
                         gravity: 200,
                         launchAngle: 0,
-                        hitEffects: [SpawnZoneEffectsLibrary.fireZone.effect]
+                        hitEffects: [
+                            DamageEffect(amount: 80),
+                            SpawnZoneEffectsLibrary.fireZone.effect
+                        ]
                         ),
                     ConsumeAmmoEffect()
                 ],
@@ -172,7 +178,7 @@ enum WeaponType: CaseIterable {
                 // ammoConfig intentionally nil — mana-gated only
             )
         case .poisonBottle:
-            WeaponBase(
+            WeaponLibraryEnemy(
                 textureName: "poisonBottle",
                 offset: SIMD2<Float>(10, -5),
                 scale: 0.6,
@@ -183,12 +189,13 @@ enum WeaponType: CaseIterable {
                     CheckEnoughManaEffect(amount: 6),
                     SpawnParabolaProjectileEffect(
                         speed: 300,
-                        damage: 0,
                         spriteName: "poisonBottle",
                         collisionSize: SIMD2<Float>(10, 10),
                         gravity: 300,
                         launchAngle: 0,
-                        hitEffects: [SpawnZoneEffectsLibrary.poisonZone.effect],
+                        hitEffects: [
+                            SpawnZoneEffectsLibrary.poisonZone.effect
+                        ],
                         scale: 0.6
                         ),
                     ConsumeManaEffect(amount: 6),

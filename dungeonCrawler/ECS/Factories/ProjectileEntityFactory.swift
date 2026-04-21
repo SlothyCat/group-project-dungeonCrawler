@@ -13,7 +13,6 @@ public struct ProjectileEntityFactory: EntityFactory {
     let direction: SIMD2<Float>
     let speed: Float
     let effectiveRange: Float
-    let damage: Float
     let owner: Entity
     let spriteName: String
     let collisionBoxSize: SIMD2<Float>
@@ -25,7 +24,6 @@ public struct ProjectileEntityFactory: EntityFactory {
         aimAt direction: SIMD2<Float>,
         speed: Float,
         effectiveRange: Float,
-        damage: Float = 10,
         owner: Entity,
         spriteName: String = "normalHandgunBullet",
         collisionBoxSize: SIMD2<Float> = SIMD2<Float>(6, 6),
@@ -36,7 +34,6 @@ public struct ProjectileEntityFactory: EntityFactory {
         self.direction = direction
         self.speed = speed
         self.effectiveRange = effectiveRange
-        self.damage = damage
         self.owner = owner
         self.spriteName = spriteName
         self.collisionBoxSize = collisionBoxSize
@@ -58,7 +55,6 @@ public struct ProjectileEntityFactory: EntityFactory {
         world.addComponent(component: OwnerComponent(ownerEntity: owner), to: entity)
         world.addComponent(component: EffectiveRangeComponent(base: effectiveRange), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: collisionBoxSize), to: entity)
-        world.addComponent(component: ContactDamageComponent(damage: damage), to: entity)
         return entity
     }
 }

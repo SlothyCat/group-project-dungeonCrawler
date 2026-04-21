@@ -22,9 +22,9 @@ import simd
 /// to control where the enemy stands while shooting.
 public struct ShooterBehaviour: EnemyBehaviour {
 
-    public var weaponBase: WeaponBase
+    public var weaponBase: WeaponLibraryEnemy
 
-    public init(weaponBase: WeaponBase = .enemyRangedDefault) {
+    public init(weaponBase: WeaponLibraryEnemy = .enemyRangedDefault) {
         self.weaponBase = weaponBase
     }
 

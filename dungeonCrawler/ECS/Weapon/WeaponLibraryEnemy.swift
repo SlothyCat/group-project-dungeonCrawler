@@ -8,11 +8,11 @@
 import Foundation
 import simd
 
-public extension WeaponBase {
+public extension WeaponLibraryEnemy {
 
     /// Basic ranged weapon used by the Ranger enemy.
     /// No ammo config — enemies have unlimited supply.
-    static let enemyRangedDefault = WeaponBase(
+    static let enemyRangedDefault = WeaponLibraryEnemy(
         textureName: "EnemyBullet",
         offset: .zero,
         scale: 1.0,
@@ -23,10 +23,11 @@ public extension WeaponBase {
             SpawnLinearProjectileEffect(
                 speed: 180,
                 effectiveRange: 300,
-                damage: 8,
                 spriteName: "normalHandgunBullet",
                 collisionSize: SIMD2<Float>(6, 6),
-                hitEffects: []
+                hitEffects: [
+                    DamageEffect(amount: 8)
+                ]
             )
         ],
         anchorPoint: SIMD2<Float>(0.5, 0.5),
@@ -34,7 +35,7 @@ public extension WeaponBase {
     )
 
     /// Attack weapon used by the Tower enemy.
-    static let towerAttack = WeaponBase(
+    static let towerAttack = WeaponLibraryEnemy(
         textureName: "EnemyBullet",
         offset: .zero,
         scale: 1.0,
@@ -45,10 +46,11 @@ public extension WeaponBase {
             SpawnLinearProjectileEffect(
                 speed: 250,
                 effectiveRange: 300,
-                damage: 8,
                 spriteName: "normalHandgunBullet",
                 collisionSize: SIMD2<Float>(6, 6),
-                hitEffects: []
+                hitEffects: [
+                    DamageEffect(amount: 8)
+                ]
             )
         ],
         anchorPoint: SIMD2<Float>(0.5, 0.5),

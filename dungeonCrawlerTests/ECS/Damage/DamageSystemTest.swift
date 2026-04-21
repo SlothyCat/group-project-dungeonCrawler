@@ -57,23 +57,25 @@ final class DamageSystemTests: XCTestCase {
         return entity
     }
 
-    /// Creates a dummy enemy entity and returns it.
-    private func makeEnemy() -> Entity {
+    /// Creates a dummy enemy entity with a contact-damage component and returns it.
+    private func makeEnemy(contactDamage: Float = 10) -> Entity {
         let entity = world.createEntity()
         world.addComponent(component: EnemyTagComponent(textureName: "Mummy", scale: 1.0), to: entity)
         world.addComponent(component: HealthComponent(base: 100), to: entity)
+        world.addComponent(component: ContactDamageComponent(damage: contactDamage), to: entity)
         return entity
     }
 
     /// Records a hit event directly into the shared buffer.
-    private func recordHit(player: Entity, enemy: Entity, damage: Float) {
-        events.recordPlayerHitByEnemy(player: player, enemy: enemy, damage: damage)
+    private func recordHit(player: Entity, enemy: Entity) {
+        events.recordPlayerHitByEnemy(player: player, enemy: enemy)
     }
 
     // MARK: - Basic damage application
 
     func testDamageReducesPlayerHealth() {
-        recordHit(player: player, enemy: enemy, damage: 20)
+        let enemy = makeEnemy(contactDamage: 20)
+        recordHit(player: player, enemy: enemy)
 
         system.update(deltaTime: 0.016, world: world)
 
@@ -83,7 +85,8 @@ final class DamageSystemTests: XCTestCase {
 
     func testDamageDoesNotGoBelowZero() {
         let player = makePlayer(hp: 10)
-        recordHit(player: player, enemy: enemy, damage: 999)
+        let enemy = makeEnemy(contactDamage: 999)
+        recordHit(player: player, enemy: enemy)
 
         system.update(deltaTime: 0.016, world: world)
 
@@ -93,7 +96,8 @@ final class DamageSystemTests: XCTestCase {
 
     func testFullDamageAppliedExactly() {
         let player = makePlayer(hp: 50)
-        recordHit(player: player, enemy: enemy, damage: 50)
+        let enemy = makeEnemy(contactDamage: 50)
+        recordHit(player: player, enemy: enemy)
 
         system.update(deltaTime: 0.016, world: world)
 
@@ -104,7 +108,7 @@ final class DamageSystemTests: XCTestCase {
     // MARK: - Invincibility frames granted after hit
 
     func testInvincibilityComponentAddedAfterDamage() {
-        recordHit(player: player, enemy: enemy, damage: 10)
+        recordHit(player: player, enemy: enemy)
 
         system.update(deltaTime: 0.016, world: world)
 
@@ -112,9 +116,10 @@ final class DamageSystemTests: XCTestCase {
     }
 
     func testInvincibilityPreventsSecondHitSameFrame() {
+        let enemy = makeEnemy(contactDamage: 20)
         // Two events in the same frame
-        recordHit(player: player, enemy: enemy, damage: 20)
-        recordHit(player: player, enemy: enemy, damage: 20)
+        recordHit(player: player, enemy: enemy)
+        recordHit(player: player, enemy: enemy)
 
         system.update(deltaTime: 0.016, world: world)
 
@@ -126,7 +131,8 @@ final class DamageSystemTests: XCTestCase {
     func testEntityAlreadyInvincibleTakeNoDamage() {
         // Pre-attach invincibility
         world.addComponent(component: InvincibilityComponent(remainingTime: 0.5), to: player)
-        recordHit(player: player, enemy: enemy, damage: 30)
+        let enemy = makeEnemy(contactDamage: 30)
+        recordHit(player: player, enemy: enemy)
 
         system.update(deltaTime: 0.016, world: world)
 
@@ -146,7 +152,8 @@ final class DamageSystemTests: XCTestCase {
     }
 
     func testDeadEntityIsSkipped() {
-        recordHit(player: player, enemy: enemy, damage: 200)
+        let enemy = makeEnemy(contactDamage: 200)
+        recordHit(player: player, enemy: enemy)
 
         // Destroy the player before the system runs
         world.destroyEntity(entity: player)
@@ -160,8 +167,8 @@ final class DamageSystemTests: XCTestCase {
     func testDamageAppliedToCorrectPlayer() {
         let playerA = makePlayer(hp: 100)
         let playerB = makePlayer(hp: 100)
-        let enemy   = makeEnemy()
-        recordHit(player: playerA, enemy: enemy, damage: 25)
+        let enemy   = makeEnemy(contactDamage: 25)
+        recordHit(player: playerA, enemy: enemy)
 
         system.update(deltaTime: 0.016, world: world)
 
@@ -176,7 +183,7 @@ final class DamageSystemTests: XCTestCase {
     }
 
     func testEmptyWorldDoesNotCrash() {
-        recordHit(player: Entity(), enemy: Entity(), damage: 10)
+        recordHit(player: Entity(), enemy: Entity())
         system.update(deltaTime: 0.016, world: world)
     }
 }

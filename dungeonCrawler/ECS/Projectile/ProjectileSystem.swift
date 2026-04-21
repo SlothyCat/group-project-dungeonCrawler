@@ -62,8 +62,7 @@ public final class ProjectileSystem: System {
             }
         }
 
-        // Projectile hit an enemy — run hit effects only.
-        // Damage application and projectile destruction are handled by DamageSystem.
+        // Projectile hit an enemy — apply hit effects, then destroy the projectile.
         for event in events.projectileHitEnemy {
             let entity = event.projectile
             guard world.isAlive(entity: entity) else { continue }
@@ -73,6 +72,20 @@ public final class ProjectileSystem: System {
             for effect in projectileComponent.hitEffects {
                 effect.apply(context: context)
             }
+            destructionQueue.enqueue(entity)
+        }
+
+        for event in events.playerHitByEnemy {
+            let entity = event.enemy
+            guard world.isAlive(entity: entity),
+                  let projectileComponent = world.getComponent(type: ProjectileComponent.self, for: entity)
+            else { continue }
+            let pos = world.getComponent(type: TransformComponent.self, for: entity)?.position ?? .zero
+            let context = HitContext(center: pos, world: world, target: event.player)
+            for effect in projectileComponent.hitEffects {
+                effect.apply(context: context)
+            }
+            destructionQueue.enqueue(entity)
         }
 
         destructionQueue.flush(world: world)

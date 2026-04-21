@@ -29,7 +29,8 @@ public enum SpawnZoneEffectsLibrary {
                 duration: 3,
                 hitEffects: [
                     TintEffect(duration: 0.1, newTint: TintLibrary.poisonTint.tint),
-                    SlowEffect(multiplier: 0.4, duration: 0.5)
+                    SlowEffect(multiplier: 0.4, duration: 0.5),
+                    DamageEffect(amount: 1)
                 ])
         }
     }

@@ -10,13 +10,6 @@
  */
 
 class EquippedWeaponComponent: Component {
-//    public init(capacity: Int) {
-//        if capacity > 1 {
-//            weapons = []
-//        }
-//    }
-//    var currentWeapon: Entity
-//    var weapons: [Entity?]
     var primaryWeapon: Entity
     var secondaryWeapon: Entity?
     

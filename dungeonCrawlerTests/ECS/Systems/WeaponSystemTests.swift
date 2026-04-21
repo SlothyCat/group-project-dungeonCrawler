@@ -96,17 +96,19 @@ final class WeaponAmmoSystemTests: XCTestCase {
         firearmsEffects = WeaponEffectsComponent(effects: [
             ConsumeAmmoEffect(),
             SpawnLinearProjectileEffect(
-                speed: 300, effectiveRange: 400, damage: 15,
+                speed: 300, effectiveRange: 400,
                 spriteName: "normalHandgunBullet",
-                collisionSize: SIMD2<Float>(6, 6), hitEffects: []
+                collisionSize: SIMD2<Float>(6, 6),
+                hitEffects: [DamageEffect(amount: 15)]
             )
         ])
         magicalEffects = WeaponEffectsComponent(effects: [
             ConsumeManaEffect(amount: 5),
             SpawnLinearProjectileEffect(
-                speed: 250, effectiveRange: 500, damage: 30,
+                speed: 250, effectiveRange: 500,
                 spriteName: "magicOrb",
-                collisionSize: SIMD2<Float>(8, 8), hitEffects: []
+                collisionSize: SIMD2<Float>(8, 8),
+                hitEffects: [DamageEffect(amount: 30)]
             )
         ])
 

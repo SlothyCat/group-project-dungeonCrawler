@@ -16,7 +16,6 @@ import simd
  * modifiable parameters:
  *  - speed: Float
  *  - effective range: Float
- *  - damage: Float
  *  - sprite: String
  *  - collision box size: SIMD2<Float>
  */
@@ -24,7 +23,6 @@ import simd
 struct SpawnLinearProjectileEffect: WeaponEffect {
     let speed: Float
     let effectiveRange: Float
-    let damage: Float
     let spriteName: String
     let collisionSize: SIMD2<Float>
     let hitEffects: [any ProjectileHitEffect]
@@ -32,14 +30,12 @@ struct SpawnLinearProjectileEffect: WeaponEffect {
     init(
         speed: Float,
         effectiveRange: Float,
-        damage: Float,
         spriteName: String,
         collisionSize: SIMD2<Float>,
         hitEffects: [any ProjectileHitEffect] = []
     ) {
         self.speed = speed
         self.effectiveRange = effectiveRange
-        self.damage = damage
         self.spriteName = spriteName
         self.collisionSize = collisionSize
         self.hitEffects = hitEffects
@@ -51,7 +47,6 @@ struct SpawnLinearProjectileEffect: WeaponEffect {
             aimAt: context.fireDirection,
             speed: speed,
             effectiveRange: effectiveRange,
-            damage: damage,
             owner: context.owner,
             spriteName: spriteName,
             collisionBoxSize: collisionSize,

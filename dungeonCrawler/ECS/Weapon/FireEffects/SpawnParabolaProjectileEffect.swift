@@ -3,7 +3,6 @@ import simd
 
 struct SpawnParabolaProjectileEffect: WeaponEffect {
     let speed: Float
-    let damage: Float
     let spriteName: String
     let collisionSize: SIMD2<Float>
     let gravity: Float
@@ -13,7 +12,6 @@ struct SpawnParabolaProjectileEffect: WeaponEffect {
 
     init(
         speed: Float,
-        damage: Float,
         spriteName: String,
         collisionSize: SIMD2<Float>,
         gravity: Float = 300,
@@ -24,7 +22,6 @@ struct SpawnParabolaProjectileEffect: WeaponEffect {
         self.speed = speed
         self.gravity = gravity
         self.launchAngle = launchAngle
-        self.damage = damage
         self.spriteName = spriteName
         self.collisionSize = collisionSize
         self.hitEffects = hitEffects
@@ -56,7 +53,6 @@ struct SpawnParabolaProjectileEffect: WeaponEffect {
             aimAt: loftedDir,
             speed: speed,
             effectiveRange: effectiveRange,
-            damage: damage,
             owner: context.owner,
             spriteName: spriteName,
             collisionBoxSize: collisionSize,

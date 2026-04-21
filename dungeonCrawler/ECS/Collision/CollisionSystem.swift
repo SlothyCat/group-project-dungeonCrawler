@@ -1,10 +1,3 @@
-//
-//  CollisionSystem.swift
-//  dungeonCrawler
-//
-//  Created by Yu Letian on 16/3/26.
-//
-
 import Foundation
 import simd
 
@@ -75,38 +68,30 @@ public final class CollisionSystem: System {
 
         // Projectile hits an enemy — only player-owned projectiles damage enemies
         if aIsProjectile && bIsEnemy {
-            let damage = world.getComponent(type: ContactDamageComponent.self, for: entityA)?.damage ?? 0
             let owner = world.getComponent(type: OwnerComponent.self, for: entityA)?.ownerEntity
             guard let owner, owner.id != entityB.id else { return }
             guard world.getComponent(type: PlayerTagComponent.self, for: owner) != nil else { return }
-            events.recordProjectileHitEnemy(projectile: entityA, enemy: entityB, damage: damage)
+            events.recordProjectileHitEnemy(projectile: entityA, enemy: entityB)
             return
         }
         if bIsProjectile && aIsEnemy {
-            let damage = world.getComponent(type: ContactDamageComponent.self, for: entityB)?.damage ?? 0
             let owner = world.getComponent(type: OwnerComponent.self, for: entityB)?.ownerEntity
             guard let owner, owner.id != entityA.id else { return }
             guard world.getComponent(type: PlayerTagComponent.self, for: owner) != nil else { return }
-            events.recordProjectileHitEnemy(projectile: entityB, enemy: entityA, damage: damage)
+            events.recordProjectileHitEnemy(projectile: entityB, enemy: entityA)
             return
         }
 
-        // Enemy-owned projectile hits the player
-        // Reuses the existing playerHitByEnemy event + DamageSystem iframes logic
         if aIsProjectile && bIsPlayer {
             let owner = world.getComponent(type: OwnerComponent.self, for: entityA)?.ownerEntity
             guard let owner, isEnemy(owner, world: world) else { return }
-            let damage = world.getComponent(type: ContactDamageComponent.self, for: entityA)?.damage ?? 0
-            events.recordPlayerHitByEnemy(player: entityB, enemy: entityA, damage: damage)
-            destructionQueue.enqueue(entityA)
+            events.recordPlayerHitByEnemy(player: entityB, enemy: entityA)
             return
         }
         if bIsProjectile && aIsPlayer {
             let owner = world.getComponent(type: OwnerComponent.self, for: entityB)?.ownerEntity
             guard let owner, isEnemy(owner, world: world) else { return }
-            let damage = world.getComponent(type: ContactDamageComponent.self, for: entityB)?.damage ?? 0
-            events.recordPlayerHitByEnemy(player: entityA, enemy: entityB, damage: damage)
-            destructionQueue.enqueue(entityB)
+            events.recordPlayerHitByEnemy(player: entityA, enemy: entityB)
             return
         }
 
@@ -248,8 +233,7 @@ public final class CollisionSystem: System {
                                duration: knockbackDuration, world: world)
         applyKnockbackIfNeeded(to: enemy,  velocity: -enemyKnockbackSpeed * bounceDir,
                                duration: knockbackDuration, world: world)
-        let damage = world.getComponent(type: ContactDamageComponent.self, for: enemy)?.damage ?? 10.0
-        events.recordPlayerHitByEnemy(player: player, enemy: enemy, damage: damage)
+        events.recordPlayerHitByEnemy(player: player, enemy: enemy)
     }
  
     /// Two enemies overlap — equal positional split, no knockback.
