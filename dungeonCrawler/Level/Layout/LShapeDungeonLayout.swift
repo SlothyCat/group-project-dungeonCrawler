@@ -24,21 +24,17 @@ public final class LShapeDungeonLayout: DungeonLayoutStrategy {
     // MARK: - DungeonLayoutStrategy
 
     public func generate(context: GenerationContext) -> DungeonGraph {
-        _ = context.makeGenerator()
-
         let roomWidth:  Float = 1000
         let roomHeight: Float = 800
         let size = SIMD2(roomWidth, roomHeight)
         let corridor = CorridorSpecification(length: corridorLength)
         let level = context.floorIndex
 
-        let builder = LayoutBuilder()
-
-        // Start room (weapon room)
-        let startID = builder.placeStartRoom(
-            bounds: RoomBounds(origin: SIMD2(-roomWidth / 2, -roomHeight / 2), size: size),
+        let builder = LayoutBuilder(
+            startRoom: RoomBounds(origin: SIMD2(-roomWidth / 2, -roomHeight / 2), size: size),
             populator: WeaponRoomPopulator()
         )
+        let startID = builder.startNodeID
 
         // Horizontal leg
         let combat1ID = builder.addRoom(

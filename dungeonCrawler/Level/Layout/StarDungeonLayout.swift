@@ -25,18 +25,16 @@ public final class StarDungeonLayout: DungeonLayoutStrategy {
     // MARK: - DungeonLayoutStrategy
 
     public func generate(context: GenerationContext) -> DungeonGraph {
-        _ = context.makeGenerator()
-
         let roomWidth:  Float = 1000
         let roomHeight: Float = 800
         let size = SIMD2(roomWidth, roomHeight)
         let corridor = CorridorSpecification(length: corridorLength)
 
-        let builder = LayoutBuilder()
-        let startID = builder.placeStartRoom(
-            bounds: RoomBounds(origin: SIMD2(-roomWidth / 2, -roomHeight / 2), size: size),
+        let builder = LayoutBuilder(
+            startRoom: RoomBounds(origin: SIMD2(-roomWidth / 2, -roomHeight / 2), size: size),
             populator: WeaponRoomPopulator()
         )
+        let startID = builder.startNodeID
 
         // Three regular combat rooms on N, E, S branches
         let combatBranches: [(Direction, Int)] = [(.north, 1), (.east, 2), (.south, 3)]
@@ -59,7 +57,7 @@ public final class StarDungeonLayout: DungeonLayoutStrategy {
             corridor: corridor,
             isBoss: true,
             populator: EnemyRoomPopulator(
-                enemyCount: 3 + context.floorIndex,
+                enemyCount: enemyCount(roomIndex: 4, levelNumber: context.floorIndex, isBoss: true),
                 enemyPool: enemyPool
             )
         )
